@@ -1,0 +1,27 @@
+
+.container[data-v-1cf27b2a] {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+  background-color: #fff;
+}
+.top-image[data-v-1cf27b2a],
+.bottom-image[data-v-1cf27b2a] {
+  margin: 20px;
+}
+.middle-logo[data-v-1cf27b2a] {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-image[data-v-1cf27b2a] {
+  width: 180px; /* 根据需要调整大小 */
+  height: 50px;
+}
+.logo-image-large[data-v-1cf27b2a] {
+  width: 150px; /* 根据需要调整大小 */
+  height: 150px;
+}
