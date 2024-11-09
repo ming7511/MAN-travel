@@ -19,7 +19,50 @@
 			{
 				"navigationBarTitleText" : ""
 			}
+		},
+		{
+			"path" : "pages/about-us/about-us",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/user/user",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : ".hbuilderx/suggestion/suggestion",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/suggestion/suggestion",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/function-introduction/function-introduction",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/edit-profile/edit-profile",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
 		}
+
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
