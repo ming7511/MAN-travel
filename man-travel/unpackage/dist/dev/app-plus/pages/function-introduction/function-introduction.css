@@ -1,0 +1,32 @@
+
+.intro-page[data-v-66966164] {
+  padding: 20px;
+  background-color: #f8f8f8;
+  min-height: 100vh;
+}
+.header[data-v-66966164] {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+}
+.back-button[data-v-66966164] {
+  font-size: 16px;
+  cursor: pointer;
+  color: #333;
+}
+.intro-content[data-v-66966164] {
+  margin-top: 20px;
+  text-align: center;
+}
+.app-name[data-v-66966164] {
+  font-size: 28px;
+  font-weight: bold;
+  color: #444;
+  margin-bottom: 20px;
+}
+.app-description[data-v-66966164] {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.5;
+  padding: 0 20px;
+}

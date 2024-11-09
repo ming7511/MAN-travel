@@ -2,7 +2,7 @@
   <div class="profile-page">
     <!-- 顶部个人信息 -->
     <div class="profile-header">
-      <img class="avatar" src="/static/logo.png" alt="avatar" />
+      <image class="avatar" src="/static/logo.png" alt="avatar" />
       <div class="username">一个真正的man</div>
       <!-- 右上角编辑按钮，改为灰色字体的可点击文本 -->
       <div class="edit-link" @click="goToEditPage">编辑</div>
@@ -41,29 +41,23 @@
 </template>
 
 <script setup>
-// 引入 getCurrentInstance 以获取当前组件实例
-import { getCurrentInstance } from 'vue';
-
-// 获取组件实例的 proxy
-const { proxy } = getCurrentInstance();
-
 // 跳转到编辑页面
 const goToEditPage = () => {
-  proxy.uni.navigateTo({
+  uni.navigateTo({
     url: '/pages/edit-profile/edit-profile' // 指定目标页面的路径
   });
 };
 
 // 跳转到建议反馈页面
 const goToFeedback = () => {
-  proxy.uni.navigateTo({
-    url: '/pages/feedback/feedback'
+  uni.navigateTo({
+    url: '/pages/suggestion/suggestion'
   });
 };
 
 // 跳转到关于我们页面
 const goToAboutUs = () => {
-  proxy.uni.navigateTo({
+  uni.navigateTo({
     url: '/pages/about-us/about-us'
   });
 };
