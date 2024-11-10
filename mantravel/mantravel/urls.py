@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from trip.views import kimi_chat_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('kimi-chat/', kimi_chat_view, name='kimi_chat'),
 ]
