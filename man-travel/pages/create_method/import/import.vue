@@ -1,0 +1,469 @@
+<template>
+  <view class="container">
+    <!-- 叉号和链接框分为两行 -->
+    <view class="row">
+      <!-- 叉号 -->
+      <view class="close-icon-container">
+        <image src="/static/icons/close.png" class="close-icon" @click="closePage" />
+      </view>
+    </view>
+
+    <!-- 链接框 -->
+    <view class="link-container">
+      <view class="link-box">
+        <image src="/static/link_image.png" class="link-image" />
+        <text class="link-title">链接标题</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 警告提示 -->
+  <view class="warning-box">
+    <image src="/static/icons/warning.png" class="warning-icon" />
+    <text class="warning-text">{{ warningMessage }}</text>
+  </view>
+
+<!-- 行程和地点概览 -->
+<view class="overview">
+  <!-- 行程部分 -->
+  <text
+    :class="['overview-text', { 'active-text': activeTab === 'itinerary' }]"
+    @click="toggleTab('itinerary')"
+  >
+    行程·{{ itineraryDays }}天
+  </text>
+  
+  <!-- 地点部分，保持不变 -->
+  <text
+    :class="['overview-text', { 'active-text': activeTab === 'locations' }]"
+    @click="toggleTab('locations')"
+  >
+    地点·{{ locationCount }}个
+  </text>
+</view>
+
+<!-- 分割线 -->
+<view class="divider-line"></view>
+
+  <!-- 根据选择显示不同的内容 -->
+  <view class="tab-content">
+    <!-- 行程内容 -->
+    <view v-if="activeTab === 'itinerary'">
+      <!-- 行程展示逻辑 -->
+      <view class="itinerary-selection">
+        <view
+          class="itinerary-box"
+          :class="{'active-itinerary-box': selectedDay === 'overview'}"
+          @click="selectDay('overview')"
+        >
+          <text
+            :class="{'active-text': selectedDay === 'overview'}"
+          >
+            总览
+          </text>
+        </view>
+		<view
+          v-for="i in itineraryDays"
+          :key="i"
+          class="itinerary-box"
+          :class="{'active-itinerary-box': selectedDay === i}"
+          @click="selectDay(i)"
+        >
+          <text
+            :class="{'active-text': selectedDay === i}"
+          >
+            DAY{{ i }}
+          </text>
+        </view>
+        
+      </view>
+
+      <view v-if="selectedDay !== 'overview'">
+        <text class="tab-text">行程详情：DAY{{ selectedDay }}的安排...</text>
+        <view v-for="day in itineraryData" :key="day.day">
+          <view v-if="day.day === selectedDay">
+            <text class="day-heading">DAY{{ day.day }}</text>
+            <view v-for="(location, index) in day.locations" :key="index" class="location-item">
+              <view class="location-thumbnail">
+                <image :src="location.thumbnail" class="thumbnail" />
+              </view>
+              <view class="location-info">
+                <text class="location-name">{{ location.name }}</text>
+                <text class="location-type">{{ location.type }} | {{ location.address }}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 总览 -->
+      <view v-if="selectedDay === 'overview'">
+        <text class="tab-text">行程总览：{{ itineraryDays }}天的安排</text>
+        <view v-for="day in itineraryData" :key="day.day">
+          <text class="day-heading">DAY{{ day.day }}：{{ day.locations.length }}个地点</text>
+          <view v-for="(location, index) in day.locations" :key="index" class="location-item">
+            <view class="location-thumbnail">
+              <image :src="location.thumbnail" class="thumbnail" />
+            </view>
+            <view class="location-info">
+              <text class="location-name">{{ location.name }}</text>
+              <text class="location-type">{{ location.type }} | {{ location.address }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+    </view>
+
+    <!-- 地点内容（保留不变） -->
+    <view v-if="activeTab === 'locations'">
+      <!-- 地点展示逻辑 (假设地点信息在`locationData`中) -->
+      <view v-for="(location, index) in locationData" :key="index" class="location-item">
+        <view class="location-thumbnail">
+          <image :src="location.thumbnail" class="thumbnail" />
+        </view>
+        <view class="location-info">
+          <text class="location-name">{{ location.name }}</text>
+          <text class="location-type">{{ location.type }} | {{ location.address }}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+<!-- 行程确认框 -->
+<view v-if="showItineraryConfirm" class="confirm-box black-confirm">
+  <text class="confirm-text white-text">创建为新的行程</text>
+</view>
+
+<!-- 地点确认框 -->
+<view v-if="showLocationConfirm" class="confirm-box white-confirm">
+  <text class="confirm-text black-text">添加至行程</text>
+</view>
+
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+
+// 数据和变量
+const pageTitle = ref('福州三天两夜旅游攻略来喽~');
+const warningMessage = ref('地点和行程可能会有出入，请仔细核对哦~');
+const itineraryDays = ref(3); // 默认3天
+const locationCount = ref(12); // 默认12个地点
+const locations = ref([]); // 地点数据
+const activeTab = ref('itinerary'); // 默认显示行程
+
+// 确认框的状态变量
+const showItineraryConfirm = ref(false);
+const showLocationConfirm = ref(false);
+
+// 页面加载时从数据库获取地点信息
+onMounted(() => {
+  locationData();
+});
+
+// 模拟从数据库或API获取地点数据
+const locationData = () => {
+  locations.value = [
+    {
+      name: '福州站',
+      type: '交通',
+      address: '福州市晋安区华林路502号',
+      thumbnail: '/static/logo.png',
+      isSelected: false,
+    },
+    {
+      name: '三坊七巷',
+      type: '景点',
+      address: '福州市鼓楼区三坊七巷',
+      thumbnail: '/static/logo.png',
+      isSelected: false,
+    },
+  ];
+};
+
+// 切换选中状态
+const toggleSelection = (index) => {
+  locations.value[index].isSelected = !locations.value[index].isSelected;
+};
+
+// 切换行程和地点标签
+const toggleTab = (tab) => {
+  activeTab.value = tab;
+  if (tab === 'itinerary') {
+    showItineraryConfirm.value = true;
+    showLocationConfirm.value = false;
+  } else if (tab === 'locations') {
+    showLocationConfirm.value = true;
+    showItineraryConfirm.value = false;
+  }
+}
+
+// 选择行程的天数
+const selectDay = (day) => {
+  selectedDay.value = day;
+};
+
+// 返回上一页
+const goBack = () => {
+  uni.navigateBack();
+};
+</script>
+
+
+<style scoped>
+/* 页面整体布局 */
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 20rpx;
+}
+
+/* 叉号 */
+.close-icon-container {
+  display: flex;
+  justify-content: flex-start;
+  padding-bottom: 20rpx;
+}
+
+.close-icon {
+  width: 30rpx;
+  height: 30rpx;
+  cursor: pointer;
+}
+
+/* 链接框 */
+.link-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20rpx;
+}
+
+.link-box {
+  width: 100%;
+  max-width: 700rpx;
+  height: 150rpx;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 50rpx;
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* 确保圆角效果生效 */
+}
+
+.link-image {
+  width: 90px; /* 固定宽度，使其为正方形 */
+  height: 100%; /* 占满链接框的高度 */
+  object-fit: cover; /* 保持图片比例填充 */
+  border-radius: 50rpx 0 0 50rpx; /* 左侧圆角 */
+}
+
+.link-title {
+  font-size: 18px;
+  color: #333;
+  flex-grow: 1;
+  padding-left: 20rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 文字过长时显示省略号 */
+}
+
+
+
+/* 警告提示 */
+.warning-box {
+  width: 100%; /* 控制宽度以适应不同屏幕 */
+  max-width: 900rpx; /* 设置最大宽度 */
+  margin: 0 auto; /* 水平居中 */
+  margin-left: -20rpx;
+  margin-top: 20rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 水平居中对齐内部内容 */
+}
+
+.warning-icon {
+  width: 50rpx; /* 调整图标尺寸更显眼 */
+  height: 50rpx;
+  margin-right: 15rpx;
+}
+
+.warning-text {
+  font-size: 17px; /* 调整字体大小 */
+  font-style: italic;
+  color: #ff6f00;
+}
+
+/* 行程和地点概览 */
+.overview {
+  display: flex;
+  justify-content: flex-start; /* 左对齐 */
+  align-items: center;
+  padding-left: 30rpx; /* 添加左边距 */
+  margin: 20rpx 0;
+}
+
+.overview-text {
+  font-family: 'TaipeiSansTCBeta', sans-serif; /* 使用自定义字体 */
+  font-size: 45rpx;
+  color: #888;
+  cursor: pointer;
+  margin-right: 30rpx;
+  letter-spacing: 2rpx;
+}
+
+.active-text {
+  font-family: 'TaipeiSansTCBeta', sans-serif; /* 使用自定义字体 */
+  color: #000;
+  font-weight: bold;
+}
+
+/* 分割线 */
+.divider-line {
+  width: 100%; /* 覆盖整个页面宽度 */
+  height: 2rpx; /* 分割线厚度 */
+  background-color: #e0e0e0; /* 灰色 */
+  margin: 10rpx 0; /* 上下间距 */
+}
+
+
+.divider {
+  font-size: 28px;
+  color: #888;
+}
+
+/* 行程选择框 */
+.itinerary-selection {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-left;
+  margin-top: -10rpx;
+  margin-bottom: 20rpx;
+}
+
+.itinerary-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx;
+  margin-left: 5rpx;
+  margin-right: 15rpx;
+  background-color: #fff;
+  border-radius: 50rpx;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 26rpx;
+}
+
+.active-itinerary-box {
+  border-color: #000;
+  background-color: #000;
+  color: #000;
+  font-weight: bold;
+}
+.tab-content {
+  padding: 20rpx;
+}
+
+.tab-text {
+  font-size: 28rpx;
+  color: #333;
+}
+
+/* 地点列表 */
+.location-list {
+  flex-grow: 1;
+  padding: 10rpx;
+  max-height: 500rpx; /* 控制滚动区域高度 */
+}
+
+.location-item {
+  display: flex;
+  align-items: center;
+  padding: 10rpx;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.location-thumbnail {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 10rpx;
+  margin-right: 10rpx;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.location-info {
+  flex-grow: 1;
+}
+
+.location-name {
+  font-size: 16px;
+  color: #333;
+}
+
+.location-type {
+  font-size: 12px;
+  color: #888;
+}
+
+
+/* 选择框 */
+.checkmark {
+  width: 20rpx;
+  height: 20rpx;
+}
+
+.check-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.confirm-box {
+  position: fixed;
+  bottom: 50rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 20rpx 40rpx;
+  border-radius: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.black-confirm {
+  background-color: #000;
+}
+
+.white-text {
+  color: #fff;
+}
+
+.white-confirm {
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0.1, 0.2);
+}
+
+.black-text {
+  color: #000;
+}
+
+@font-face {
+	font-family: 'TaipeiSansTCBeta';
+	src: url('/static/fonts/TaipeiSansTCBeta-Regular.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+	}
+
+body {
+  font-family: 'TaipeiSansTCBeta', sans-serif;
+}
+</style>
