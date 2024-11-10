@@ -28,26 +28,60 @@
 			}
 		},
 		{
+<<<<<<< HEAD
 			"path" : "pages/create_method/create_linkimport/create_linkimport",
+=======
+			"path" : "pages/about-us/about-us",
+>>>>>>> 528244cc056784c01ab646f02405b77f9949ddd6
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
 		},
 		{
+<<<<<<< HEAD
 			"path" : "pages/main/main",
+=======
+			"path" : "pages/user/user",
+>>>>>>> 528244cc056784c01ab646f02405b77f9949ddd6
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
 		},
 		{
+<<<<<<< HEAD
 			"path" : "pages/create_method/import/import",
+=======
+			"path" : ".hbuilderx/suggestion/suggestion",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/suggestion/suggestion",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/function-introduction/function-introduction",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/edit-profile/edit-profile",
+>>>>>>> 528244cc056784c01ab646f02405b77f9949ddd6
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
 		}
+
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

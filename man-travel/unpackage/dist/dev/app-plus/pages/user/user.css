@@ -1,28 +1,28 @@
 
-.profile-page[data-v-085f0530] {
+.profile-page[data-v-0f7520f0] {
   padding: 20px;
   background-color: #f8f8f8;
   height: 100vh;
 }
-.profile-header[data-v-085f0530] {
+.profile-header[data-v-0f7520f0] {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 20px;
   position: relative;
 }
-.avatar[data-v-085f0530] {
+.avatar[data-v-0f7520f0] {
   width: 100px;
   height: 100px;
   border-radius: 50%;
   background-color: #f0f0f0;
 }
-.username[data-v-085f0530] {
+.username[data-v-0f7520f0] {
   margin-top: 10px;
   font-size: 18px;
   font-weight: bold;
 }
-.edit-link[data-v-085f0530] {
+.edit-link[data-v-0f7520f0] {
   position: absolute;
   top: 10px;
   right: 20px;
@@ -31,7 +31,7 @@
   cursor: pointer;
   text-decoration: underline; /* 可选：增加下划线以表明可点击 */
 }
-.travel-stats[data-v-085f0530] {
+.travel-stats[data-v-0f7520f0] {
   display: flex;
   justify-content: space-around;
   background-color: #ffffff;
@@ -39,22 +39,22 @@
   border-radius: 10px;
   margin-bottom: 20px;
 }
-.stat-item[data-v-085f0530] {
+.stat-item[data-v-0f7520f0] {
   text-align: center;
 }
-.stat-value[data-v-085f0530] {
+.stat-value[data-v-0f7520f0] {
   font-size: 20px;
   font-weight: bold;
 }
-.stat-label[data-v-085f0530] {
+.stat-label[data-v-0f7520f0] {
   color: #666;
   font-size: 14px;
 }
-.options-list[data-v-085f0530] {
+.options-list[data-v-0f7520f0] {
   background-color: #ffffff;
   border-radius: 10px;
 }
-.option-item[data-v-085f0530] {
+.option-item[data-v-0f7520f0] {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,19 +62,19 @@
   border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
 }
-.option-item[data-v-085f0530]:last-child {
+.option-item[data-v-0f7520f0]:last-child {
   border-bottom: none;
 }
-.icon[data-v-085f0530] {
+.icon[data-v-0f7520f0] {
   font-size: 20px;
   color: #999;
 }
-.arrow-symbol[data-v-085f0530] {
+.arrow-symbol[data-v-0f7520f0] {
   font-size: 20px;
   color: #999;
   margin-left: 10px;
 }
-.feedback-icon[data-v-085f0530],
-.about-icon[data-v-085f0530] {
+.feedback-icon[data-v-0f7520f0],
+.about-icon[data-v-0f7520f0] {
   margin-right: 10px;
 }

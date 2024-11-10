@@ -1,0 +1,65 @@
+
+.edit-profile-page[data-v-c0f45e44] {
+  padding: 20px;
+  background-color: #f8f8f8;
+  min-height: 100vh;
+}
+.header[data-v-c0f45e44] {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.back-button[data-v-c0f45e44] {
+  font-size: 16px;
+  cursor: pointer;
+  color: #333;
+}
+.title[data-v-c0f45e44] {
+  font-size: 18px;
+  font-weight: bold;
+  margin-left: 20px;
+}
+.profile-item[data-v-c0f45e44] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #ffffff;
+}
+.avatar-item[data-v-c0f45e44] {
+  padding: 15px 0;
+}
+.label[data-v-c0f45e44] {
+  font-size: 16px;
+  color: #333;
+}
+.value[data-v-c0f45e44] {
+  font-size: 16px;
+  color: #999;
+  text-align: right; /* 设置右对齐 */
+  flex-grow: 1; /* 占用剩余空间 */
+  margin-right: 10px;
+}
+.avatar-image[data-v-c0f45e44] {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+.arrow[data-v-c0f45e44] {
+  font-size: 16px;
+  color: #999;
+}
+.submit-button[data-v-c0f45e44] {
+  margin-top: 30px;
+  background-color: #007aff;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  border-radius: 25px;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
