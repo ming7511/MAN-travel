@@ -68,7 +68,7 @@ tool_map = {
     "crawl_webpage_content": crawl_webpage_content
 }
 
-with open(r"D:\软件工程\团队作业\2\promt.txt", "r", encoding="utf-8") as f:
+with open(r"../promt.txt", "r", encoding="utf-8") as f:
     prompt = f.read()
 
 # 定义对话函数
