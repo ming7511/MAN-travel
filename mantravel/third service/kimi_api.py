@@ -4,6 +4,7 @@ import re
 import requests
 import json
 import settings
+import os
 
 # 初始化 OpenAI 客户端
 client = OpenAI(
@@ -68,7 +69,8 @@ tool_map = {
     "crawl_webpage_content": crawl_webpage_content
 }
 
-with open(r"../promt.txt", "r", encoding="utf-8") as f:
+file_path = os.path.join(os.path.dirname(__file__), 'promt.txt')
+with open(file_path, "r", encoding="utf-8") as f:
     prompt = f.read()
 
 # 定义对话函数
@@ -134,9 +136,3 @@ def multi_turn_chat(query: str, history=None, reset=False):
             "content": result
         })
         return result, history
-
-
-# 测试调用
-query1 = 'https://www.xiaohongshu.com/explore/6724a4e100000000190143ef?xsec_token=ABMlds0Bsm02wq2HcmMj7O7UfMYamM1IdrX_JpEWJB5mw=&xsec_source=pc_search&source=unknown'
-response, history = multi_turn_chat(query1)
-print(response)
