@@ -23,33 +23,32 @@
     <text class="warning-text">{{ warningMessage }}</text>
   </view>
 
-<!-- 行程和地点概览 -->
-<view class="overview">
-  <!-- 行程部分 -->
-  <text
-    :class="['overview-text', { 'active-text': activeTab === 'itinerary' }]"
-    @click="toggleTab('itinerary')"
-  >
-    行程·{{ itineraryDays }}天
-  </text>
-  
-  <!-- 地点部分，保持不变 -->
-  <text
-    :class="['overview-text', { 'active-text': activeTab === 'locations' }]"
-    @click="toggleTab('locations')"
-  >
-    地点·{{ locationCount }}个
-  </text>
-</view>
+  <!-- 行程和地点概览 -->
+  <view class="overview">
+    <!-- 行程部分 -->
+    <text
+      :class="['overview-text', { 'active-text': activeTab === 'itinerary' }]"
+      @click="toggleTab('itinerary')"
+    >
+      行程·{{ itineraryDays }}天
+    </text>
+    
+    <!-- 地点部分 -->
+    <text
+      :class="['overview-text', { 'active-text': activeTab === 'locations' }]"
+      @click="toggleTab('locations')"
+    >
+      地点·{{ locationCount }}个
+    </text>
+  </view>
 
-<!-- 分割线 -->
-<view class="divider-line"></view>
+  <!-- 分割线 -->
+  <view class="divider-line"></view>
 
   <!-- 根据选择显示不同的内容 -->
   <view class="tab-content">
     <!-- 行程内容 -->
     <view v-if="activeTab === 'itinerary'">
-      <!-- 行程展示逻辑 -->
       <view class="itinerary-selection">
         <view
           class="itinerary-box"
@@ -62,7 +61,8 @@
             总览
           </text>
         </view>
-		<view
+        <!-- DAYx选择框 -->
+        <view
           v-for="i in itineraryDays"
           :key="i"
           class="itinerary-box"
@@ -75,28 +75,9 @@
             DAY{{ i }}
           </text>
         </view>
-        
       </view>
 
-      <view v-if="selectedDay !== 'overview'">
-        <text class="tab-text">行程详情：DAY{{ selectedDay }}的安排...</text>
-        <view v-for="day in itineraryData" :key="day.day">
-          <view v-if="day.day === selectedDay">
-            <text class="day-heading">DAY{{ day.day }}</text>
-            <view v-for="(location, index) in day.locations" :key="index" class="location-item">
-              <view class="location-thumbnail">
-                <image :src="location.thumbnail" class="thumbnail" />
-              </view>
-              <view class="location-info">
-                <text class="location-name">{{ location.name }}</text>
-                <text class="location-type">{{ location.type }} | {{ location.address }}</text>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <!-- 总览 -->
+      <!-- 总览内容 -->
       <view v-if="selectedDay === 'overview'">
         <text class="tab-text">行程总览：{{ itineraryDays }}天的安排</text>
         <view v-for="day in itineraryData" :key="day.day">
@@ -113,11 +94,28 @@
         </view>
       </view>
 
+      <!-- 显示特定DAY的地点 -->
+      <view v-if="selectedDay !== 'overview'">
+        <text class="tab-text">DAY{{ selectedDay }}的地点选择：</text>
+        <view v-for="day in itineraryData" :key="day.day">
+          <view v-if="day.day === selectedDay">
+            <view v-for="(location, index) in day.locations" :key="index" class="location-item">
+              <view class="location-thumbnail">
+                <image :src="location.thumbnail" class="thumbnail" />
+              </view>
+              <view class="location-info">
+                <text class="location-name">{{ location.name }}</text>
+                <text class="location-type">{{ location.type }} | {{ location.address }}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
     </view>
 
-    <!-- 地点内容（保留不变） -->
+    <!-- 地点内容 -->
     <view v-if="activeTab === 'locations'">
-      <!-- 地点展示逻辑 (假设地点信息在`locationData`中) -->
+      <text class="tab-text">地点列表：</text>
       <view v-for="(location, index) in locationData" :key="index" class="location-item">
         <view class="location-thumbnail">
           <image :src="location.thumbnail" class="thumbnail" />
@@ -130,15 +128,15 @@
     </view>
   </view>
 
-<!-- 行程确认框 -->
-<view v-if="showItineraryConfirm" class="confirm-box black-confirm">
-  <text class="confirm-text white-text">创建为新的行程</text>
-</view>
+  <!-- 行程确认框 -->
+  <view v-if="showItineraryConfirm" class="confirm-box black-confirm">
+    <text class="confirm-text white-text">创建为新的行程</text>
+  </view>
 
-<!-- 地点确认框 -->
-<view v-if="showLocationConfirm" class="confirm-box white-confirm">
-  <text class="confirm-text black-text">添加至行程</text>
-</view>
+  <!-- 地点确认框 -->
+  <view v-if="showLocationConfirm" class="confirm-box white-confirm">
+    <text class="confirm-text black-text">添加至行程</text>
+  </view>
 
 </template>
 
@@ -152,6 +150,7 @@ const itineraryDays = ref(3); // 默认3天
 const locationCount = ref(12); // 默认12个地点
 const locations = ref([]); // 地点数据
 const activeTab = ref('itinerary'); // 默认显示行程
+const selectedDay = ref('overview'); // 默认显示总览
 
 // 确认框的状态变量
 const showItineraryConfirm = ref(false);
@@ -164,21 +163,19 @@ onMounted(() => {
 
 // 模拟从数据库或API获取地点数据
 const locationData = () => {
+  // 模拟地点数据
   locations.value = [
-    {
-      name: '福州站',
-      type: '交通',
-      address: '福州市晋安区华林路502号',
-      thumbnail: '/static/logo.png',
-      isSelected: false,
-    },
-    {
-      name: '三坊七巷',
-      type: '景点',
-      address: '福州市鼓楼区三坊七巷',
-      thumbnail: '/static/logo.png',
-      isSelected: false,
-    },
+    { name: '福州站', type: '交通', address: '福州市晋安区华林路502号', thumbnail: '/static/logo.png' },
+    { name: '三坊七巷', type: '景点', address: '福州市鼓楼区三坊七巷', thumbnail: '/static/logo.png' },
+    { name: '鼓山', type: '景点', address: '福州市鼓山路', thumbnail: '/static/logo.png' },
+    // 其他地点
+  ];
+
+  // 模拟行程数据
+  itineraryData.value = [
+    { day: 1, locations: locations.value.slice(0, 2) }, // DAY1包含前两个地点
+    { day: 2, locations: locations.value.slice(1, 3) }, // DAY2包含第二和第三个地点
+    { day: 3, locations: locations.value.slice(0, 1) }, // DAY3包含第一个地点
   ];
 };
 
@@ -360,9 +357,17 @@ const goBack = () => {
 .active-itinerary-box {
   border-color: #000;
   background-color: #000;
+  color: #fff;
+  font-weight: bold;
+}
+
+.active-text {
+  font-family: 'TaipeiSansTCBeta', sans-serif;
   color: #000;
   font-weight: bold;
 }
+
+/* 行程选择框样式 */
 .tab-content {
   padding: 20rpx;
 }

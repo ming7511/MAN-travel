@@ -1,7 +1,21 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
 			"path" : "pages/create_method/create_method",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/create_method/create_linkimport/create_linkimport",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/create_method/import/import",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
@@ -28,32 +42,14 @@
 			}
 		},
 		{
-<<<<<<< HEAD
-			"path" : "pages/create_method/create_linkimport/create_linkimport",
-=======
 			"path" : "pages/about-us/about-us",
->>>>>>> 528244cc056784c01ab646f02405b77f9949ddd6
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
 		},
 		{
-<<<<<<< HEAD
-			"path" : "pages/main/main",
-=======
 			"path" : "pages/user/user",
->>>>>>> 528244cc056784c01ab646f02405b77f9949ddd6
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
-			}
-		},
-		{
-<<<<<<< HEAD
-			"path" : "pages/create_method/import/import",
-=======
-			"path" : ".hbuilderx/suggestion/suggestion",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
@@ -75,13 +71,11 @@
 		},
 		{
 			"path" : "pages/edit-profile/edit-profile",
->>>>>>> 528244cc056784c01ab646f02405b77f9949ddd6
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
 		}
-
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
