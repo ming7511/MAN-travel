@@ -1,0 +1,5 @@
+KIMI_API_KEY = 'sk-wtVAL5Y2PWTav9EC70Fq4oPnwM3IEoO1IxCyr2oSwnoaaeZH'
+GAODE_MAP_KEY = '256798206d997f69ce2d913b61d3addc'
+
+KIMI_MODEL_URL = "https://api.moonshot.cn/v1"
+SCRAPE_API_KEY = '3c8002cb0d731b4bf7c1d2e72ae9d819'
