@@ -39,6 +39,8 @@ const closePage = () => {
 // 跳转到下一个页面
 const goToNextPage = () => {
   if (locationInput.value.trim() !== '') {
+    // 存储用户输入的城市
+    uni.setStorageSync('selectedCity', locationInput.value);
     uni.navigateTo({
       url: '/pages/create_method/self_create/self_create_time' // 根据实际页面路径修改
     });
@@ -129,5 +131,4 @@ const goToNextPage = () => {
 body {
   font-family: sans-serif; /* 默认字体 */
 }
-
 </style>
