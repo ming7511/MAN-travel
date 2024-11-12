@@ -622,5 +622,15 @@ const closePage = () => {
   color: #000;
 }
 
+/* 加载自定义字体 */
+@font-face {
+  font-family: 'TaipeiSansTCBeta';
+  src: url('font/TaipeiSansTCBeta-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 
+body {
+  font-family: sans-serif; /* 默认字体 */
+}
 </style>
