@@ -1,10 +1,7 @@
 <template>
   <div class="edit-profile-page">
     <!-- 顶部返回按钮和标题 -->
-    <div class="header">
-      <div class="back-button" @click="goBack">＜ 返回</div>
-      <div class="title">个人信息</div>
-    </div>
+
 
     <!-- 头像编辑 -->
     <div class="profile-item avatar-item" @click="editAvatar">

@@ -1,10 +1,6 @@
 <template>
   <div class="feedback-page">
     <!-- 顶部返回按钮和标题 -->
-    <div class="header">
-      <div class="back-button" @click="goBack">＜ 返回</div>
-      <div class="title">反馈建议</div>
-    </div>
 
     <!-- 描述输入框 -->
     <div class="description-box">
