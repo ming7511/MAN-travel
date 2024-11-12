@@ -1,9 +1,7 @@
 <template>
   <div class="intro-page">
     <!-- 顶部返回按钮 -->
-    <div class="header">
-      <div class="back-button" @click="goBack">＜ 返回</div>
-    </div>
+
 
     <!-- 应用名称和介绍信息 -->
     <div class="intro-content">
