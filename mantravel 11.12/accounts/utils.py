@@ -66,8 +66,8 @@ def create_client():
     access_key_id = os.getenv('ALIYUN_ACCESS_KEY_ID')  # 从环境变量中获取 AccessKey
     access_key_secret = os.getenv('ALIYUN_ACCESS_KEY_SECRET')  # 从环境变量中获取 AccessSecret
 
-    print(f"Access Key ID: {access_key_id}")  # 调试输出
-    print(f"Access Key Secret: {access_key_secret}")  # 调试输出
+    # print(f"Access Key ID: {access_key_id}")  # 调试输出
+    # print(f"Access Key Secret: {access_key_secret}")  # 调试输出
 
     if not access_key_id or not access_key_secret:
         logger.error("AccessKey or AccessSecret is not set in environment variables.")
