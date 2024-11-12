@@ -1,6 +1,7 @@
 # utils.py
 
 # -*- coding: utf-8 -*-
+import os
 from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
 from alibabacloud_tea_openapi import models as open_api_models
 from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
@@ -8,6 +9,10 @@ from alibabacloud_tea_util import models as util_models
 from django.core.cache import cache
 import random
 import logging
+
+# 如果你决定以后使用 .env 文件，可以取消下面两行的注释
+# from dotenv import load_dotenv
+# load_dotenv()
 
 logger = logging.getLogger(__name__)
 logger.info("Testing logging output from utils.py")
@@ -54,13 +59,26 @@ def verify_code(phone, code):
 
 def create_client():
     """
-    使用AK&SK初始化账号Client
+    使用环境变量中的AK&SK初始化账号Client
     @return: Client
     @throws Exception
     """
+    access_key_id = os.getenv('ALIYUN_ACCESS_KEY_ID')  # 从环境变量中获取 AccessKey
+    access_key_secret = os.getenv('ALIYUN_ACCESS_KEY_SECRET')  # 从环境变量中获取 AccessSecret
+
+    print(f"Access Key ID: {access_key_id}")  # 调试输出
+    print(f"Access Key Secret: {access_key_secret}")  # 调试输出
+
+    if not access_key_id or not access_key_secret:
+        logger.error("AccessKey or AccessSecret is not set in environment variables.")
+        raise ValueError("AccessKey or AccessSecret is not set in environment variables.")
+
+    # 打印 AccessKey ID 调试信息（可选，确保不要在生产环境中泄露）
+    logger.debug(f"Using AccessKey ID: {access_key_id}")
+
     config = open_api_models.Config(
-        access_key_id='LTAI5t7BuezCiPkLRBjsPzWG',  # 直接硬编码 AccessKey
-        access_key_secret='XCdH3iuC5YpAHwTGyFjRMwaXMenQwM'  # 直接硬编码 AccessSecret
+        access_key_id=access_key_id,
+        access_key_secret=access_key_secret
     )
     config.endpoint = 'dysmsapi.aliyuncs.com'
     return Dysmsapi20170525Client(config)
