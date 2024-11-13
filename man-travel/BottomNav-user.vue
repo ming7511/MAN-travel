@@ -24,11 +24,11 @@ import { ref } from 'vue';
 
 // 导航到指定页面
 const navigateTo = (page) => {
-  if (page === 'profile') {
+  if (page === 'plans') {
     uni.redirectTo({
-      url: '/pages/user/user'
+      url: '/pages/index/index'
     });
-  }
+  } 
 };
 
 // 添加新行程

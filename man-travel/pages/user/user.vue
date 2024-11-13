@@ -45,7 +45,7 @@
 
 <script setup>
 // 引入 BottomNav 组件
-import BottomNav from '/BottomNav.vue';
+import BottomNav from '/BottomNav-user.vue';
 
 // 跳转到编辑页面
 const goToEditPage = () => {
