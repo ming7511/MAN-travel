@@ -136,3 +136,13 @@ def multi_turn_chat(query: str, history=None, reset=False):
             "content": result
         })
         return result, history
+<<<<<<< Updated upstream:mantravel_yyh_11.12/third_service/kimi_api.py
+=======
+
+
+# 测试调用
+query1 = "我想以轻松的风格在福州市进行三天的旅游"
+# query1 = 'https://www.xiaohongshu.com/explore/6724a4e100000000190143ef?xsec_token=ABMlds0Bsm02wq2HcmMj7O7UfMYamM1IdrX_JpEWJB5mw=&xsec_source=pc_search&source=unknown'
+response, history = multi_turn_chat(query1)
+print(response)
+>>>>>>> Stashed changes:mantravel/third service/kimi_api.py

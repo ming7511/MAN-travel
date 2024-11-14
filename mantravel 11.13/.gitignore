@@ -1,0 +1,17 @@
+# 忽略环境变量文件
+.env
+__pycache__/
+
+# 忽略 Python 缓存文件
+__pycache__/
+*.py[cod]
+
+# 忽略 IDE 配置文件
+.idea/
+.vscode/
+
+# 忽略数据库和迁移文件
+db.sqlite3
+*.log
+.env
+__pycache__/

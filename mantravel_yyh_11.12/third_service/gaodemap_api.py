@@ -422,3 +422,5 @@ class AMapClient:
         except requests.RequestException as e:
             print(f"请求失败: {e}")
             return None
+
+

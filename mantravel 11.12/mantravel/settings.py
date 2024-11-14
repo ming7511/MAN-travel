@@ -105,11 +105,11 @@ WSGI_APPLICATION = 'mantravel.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'load_db',  # 替换为你的数据库名称
+        'NAME': 'mantravel',  # 替换为你的数据库名称
         'USER': 'root',  # 数据库用户名
-        'PASSWORD': '123456',  # 数据库密码
+        'PASSWORD': '160127ss',  # 数据库密码
         'HOST': '127.0.0.1',  # MySQL 服务主机
-        'PORT': '3306',  # MySQL 端口
+        'PORT': '33068',  # MySQL 端口
         'OPTIONS': {
             'charset': 'utf8mb4',  # 支持 utf8mb4 字符集
         },

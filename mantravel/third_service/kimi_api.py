@@ -136,3 +136,10 @@ def multi_turn_chat(query: str, history=None, reset=False):
             "content": result
         })
         return result, history
+
+
+# 定义测试函数
+query1 = ("我想去福州市旅游，从11月29日开始，到12月1日结束，参考链接中的内容，帮我规划一下行程。"
+          "https://www.xiaohongshu.com/explore/66ff4d72000000001a020c9c?xsec_token=AB0ttUpFHvfCoDhlyK0s_JebIf22IvQV9LZZZJo-44NTM=&xsec_source=pc_search&source=web_explore_feed")
+response1, history1 = multi_turn_chat(query1)
+print(response1)
