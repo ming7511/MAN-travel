@@ -57,6 +57,11 @@ export default {
         uni.navigateTo({
           url: '/pages/create_method/self_create/self_create' // 新页面路径
         });
+      } else if (action === 'AI推荐') {
+        // 跳转到 'self_create' 页面
+        uni.navigateTo({
+          url: '/pages/create_method/ai_create/ai_create' // 新页面路径
+        });
       } else {
         // 显示点击了哪个按钮的提示
         uni.showToast({
