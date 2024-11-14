@@ -31,7 +31,6 @@
   </div>
 </template>
 
-
 <script setup>
 import BottomNav from '/BottomNav.vue'; // 导入底部导航栏组件
 import { ref } from 'vue';
@@ -57,7 +56,7 @@ const upcomingTrips = ref([
     bgColor: generateRandomColor(),
     places: [
       '烟台山公园', '崔酱炸鸡', '上下杭', '三坊七巷', '后街捞化',
-      '鼓山', '福道', '达明美食街', '森林公园', '温泉公园', '闽江夜游'
+      '鼓山', '福道', '达明美食街', '森林公园', '温泉公园', '间江夜游'
     ]
   },
   {
@@ -89,8 +88,6 @@ const goToOverview = (trip) => {
   });
 };
 </script>
-
-
 
 <style scoped>
 .home-page {

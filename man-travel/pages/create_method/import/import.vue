@@ -23,20 +23,19 @@
     <text class="warning-text">{{ warningMessage }}</text>
   </view>
 
-<<<<<<< HEAD
   <!-- 行程和地点概览 -->
   <view class="overview">
     <!-- 行程部分 -->
     <text
-      :class="['overview-text', { 'active-text': activeTab === 'itinerary' }]"
+      :class="['overview-text', { 'active-obview-text': activeTab === 'itinerary' }]"
       @click="toggleTab('itinerary')"
     >
       行程·{{ itineraryDays }}天
     </text>
-    
+
     <!-- 地点部分 -->
     <text
-      :class="['overview-text', { 'active-text': activeTab === 'locations' }]"
+      :class="['overview-text', { 'active-obview-text': activeTab === 'locations' }]"
       @click="toggleTab('locations')"
     >
       地点·{{ locationCount }}个
@@ -45,30 +44,6 @@
 
   <!-- 分割线 -->
   <view class="divider-line"></view>
-=======
-<!-- 行程和地点概览 -->
-<view class="overview">
-  <!-- 行程部分 -->
-  <text
-    :class="['overview-text', { 'active-obview-text': activeTab === 'itinerary' }]"
-    @click="toggleTab('itinerary')"
-  >
-    行程·{{ itineraryDays }}天
-  </text>
-
-  <!-- 地点部分 -->
-  <text
-    :class="['overview-text', { 'active-obview-text': activeTab === 'locations' }]"
-    @click="toggleTab('locations')"
-  >
-    地点·{{ locationCount }}个
-  </text>
-</view>
-
-
-<!-- 分割线 -->
-<view class="divider-line"></view>
->>>>>>> a4deaf19a539d55028e7c1e375383790eef42be1
 
   <!-- 根据选择显示不同的内容 -->
   <view class="tab-content">
@@ -84,10 +59,7 @@
             总览
           </text>
         </view>
-<<<<<<< HEAD
-        <!-- DAYx选择框 -->
-=======
->>>>>>> a4deaf19a539d55028e7c1e375383790eef42be1
+
         <view
           v-for="i in itineraryDays"
           :key="i"
@@ -101,11 +73,7 @@
         </view>
       </view>
 
-<<<<<<< HEAD
-      <!-- 总览内容 -->
-=======
       <!-- 总览 -->
->>>>>>> a4deaf19a539d55028e7c1e375383790eef42be1
       <view v-if="selectedDay === 'overview'">
         <view v-for="day in itineraryData" :key="day.day">
           <text class="day-heading">DAY{{ day.day }}</text>
@@ -123,32 +91,38 @@
                 <text class="location-address">{{ location.address }}</text>
               </view>
             </view>
-          <!-- 选择框 -->
-          <view class="select-icon-container" @click="toggleSelection(day.day - 1, index)">
-            <image 
-              :src="location.isSelected ? '/static/icons/selected.png' : '/static/icons/select.png'" 
-              class="select-icon" 
-            />
-          </view>
+            <!-- 选择框 -->
+            <view class="select-icon-container" @click="toggleSelection(day.day - 1, index)">
+              <image
+                :src="location.isSelected ? '/static/icons/selected.png' : '/static/icons/select.png'"
+                class="select-icon"
+              />
+            </view>
           </view>
         </view>
       </view>
 
-<<<<<<< HEAD
       <!-- 显示特定DAY的地点 -->
       <view v-if="selectedDay !== 'overview'">
-        <text class="tab-text">DAY{{ selectedDay }}的地点选择：</text>
-        <view v-for="day in itineraryData" :key="day.day">
-          <view v-if="day.day === selectedDay">
-            <view v-for="(location, index) in day.locations" :key="index" class="location-item">
-              <view class="location-thumbnail">
-                <image :src="location.thumbnail" class="thumbnail" />
-              </view>
-              <view class="location-info">
-                <text class="location-name">{{ location.name }}</text>
-                <text class="location-type">{{ location.type }} | {{ location.address }}</text>
-              </view>
+        <view class="day-heading">
+          DAY{{ selectedDay }}
+        </view>
+        <view v-for="(location, index) in itineraryData[selectedDay - 1].locations" :key="index" class="location-item">
+          <view class="location-thumbnail">
+            <image :src="location.thumbnail" class="thumbnail" />
+          </view>
+          <view class="location-info">
+            <text class="location-name">{{ location.name }}</text>
+            <view class="location-details">
+              <text class="location-type" :style="getLocationTypeColor(location.type)">
+                {{ location.type }}
+              </text>
+              <text class="location-separator"> | </text>
+              <text class="location-address">{{ location.address }}</text>
             </view>
+          </view>
+          <view class="select-icon-container" @click="toggleSelection(selectedDay - 1, index)">
+            <image :src="location.isSelected ? '/static/icons/selected.png' : '/static/icons/select.png'" class="select-icon" />
           </view>
         </view>
       </view>
@@ -156,77 +130,31 @@
 
     <!-- 地点内容 -->
     <view v-if="activeTab === 'locations'">
-      <text class="tab-text">地点列表：</text>
-      <view v-for="(location, index) in locationData" :key="index" class="location-item">
-        <view class="location-thumbnail">
-          <image :src="location.thumbnail" class="thumbnail" />
+      <view v-for="(day, dayIndex) in itineraryData" :key="dayIndex">
+        <view v-for="(location, index) in day.locations" :key="index" class="location-item">
+          <view class="location-thumbnail">
+            <image :src="location.thumbnail" class="thumbnail" />
+          </view>
+          <view class="location-info">
+            <text class="location-name">{{ location.name }}</text>
+            <view class="location-details">
+              <text class="location-type" :style="getLocationTypeColor(location.type)">
+                {{ location.type }}
+              </text>
+              <text class="location-separator"> | </text>
+              <text class="location-address">{{ location.address }}</text>
+            </view>
+          </view>
+          <!-- 选择框 -->
+          <view class="select-icon-container" @click="toggleSelection(dayIndex, index)">
+            <image
+              :src="location.isSelected ? '/static/icons/selected.png' : '/static/icons/select.png'"
+              class="select-icon"
+            />
+          </view>
         </view>
-        <view class="location-info">
-          <text class="location-name">{{ location.name }}</text>
-          <text class="location-type">{{ location.type }} | {{ location.address }}</text>
-=======
-  <!-- 每天的行程详情 -->
-  <view v-else>
-	    <!-- 显示 DAYX 日期 -->
-	    <view class="day-heading">
-	      DAY{{ selectedDay }}
-	    </view>
-    <view v-for="(location, index) in itineraryData[selectedDay - 1].locations" :key="index" class="location-item">
-      <view class="location-thumbnail">
-        <image :src="location.thumbnail" class="thumbnail" />
-      </view>
-	  
-      <view class="location-info">
-        <text class="location-name">{{ location.name }}</text>
-        <view class="location-details">
-          <text class="location-type" :style="getLocationTypeColor(location.type)">
-            {{ location.type }}
-          </text>
-          <text class="location-separator"> | </text>
-          <text class="location-address">{{ location.address }}</text>
->>>>>>> a4deaf19a539d55028e7c1e375383790eef42be1
-        </view>
-      </view>
-      <view class="select-icon-container" @click="toggleSelection(selectedDay - 1, index)">
-        <image :src="location.isSelected ? '/static/icons/selected.png' : '/static/icons/select.png'" class="select-icon" />
       </view>
     </view>
-  </view>
-</view>
-
-
-  
-<!-- 地点内容（保留不变） -->
-<view v-if="activeTab === 'locations'">
-  <!-- 地点展示逻辑 -->
-  <view v-for="(day, dayIndex) in itineraryData" :key="dayIndex">
-    <!-- 这里去掉了 DAYX 显示，只直接显示地点信息 -->
-    <view v-for="(location, index) in day.locations" :key="index" class="location-item">
-      <view class="location-thumbnail">
-        <image :src="location.thumbnail" class="thumbnail" />
-      </view>
-      <view class="location-info">
-        <text class="location-name">{{ location.name }}</text>
-        <view class="location-details">
-          <text class="location-type" :style="getLocationTypeColor(location.type)">
-            {{ location.type }}
-          </text>
-          <text class="location-separator"> | </text>
-          <text class="location-address">{{ location.address }}</text>
-        </view>
-      </view>
-      <!-- 选择框 -->
-      <view class="select-icon-container" @click="toggleSelection(dayIndex, index)">
-        <image 
-          :src="location.isSelected ? '/static/icons/selected.png' : '/static/icons/select.png'" 
-          class="select-icon" 
-        />
-      </view>
-    </view>
-
-  </view>
-</view>
-
   </view>
 
   <!-- 行程确认框 -->
@@ -238,7 +166,6 @@
   <view v-if="showLocationConfirm" class="confirm-box white-confirm">
     <text class="confirm-text black-text">添加至行程</text>
   </view>
-
 </template>
 
 <script setup>
@@ -251,12 +178,7 @@ const itineraryDays = ref(3); // 默认3天
 const locationCount = ref(12); // 默认12个地点
 const locations = ref([]); // 地点数据
 const activeTab = ref('itinerary'); // 默认显示行程
-<<<<<<< HEAD
-const selectedDay = ref('overview'); // 默认显示总览
-=======
 const selectedDay = ref('overview'); // 默认选中“总览”
-
->>>>>>> a4deaf19a539d55028e7c1e375383790eef42be1
 
 // 确认框的状态变量
 const showItineraryConfirm = ref(false);
@@ -351,24 +273,25 @@ const itineraryData = ref([
       }
     ]
   },
-  // 可以继续添加更多天的数据
 ]);
 
 // 模拟从数据库或API获取地点数据
 const locationData = () => {
-  // 模拟地点数据
   locations.value = [
-    { name: '福州站', type: '交通', address: '福州市晋安区华林路502号', thumbnail: '/static/logo.png' },
-    { name: '三坊七巷', type: '景点', address: '福州市鼓楼区三坊七巷', thumbnail: '/static/logo.png' },
-    { name: '鼓山', type: '景点', address: '福州市鼓山路', thumbnail: '/static/logo.png' },
-    // 其他地点
-  ];
-
-  // 模拟行程数据
-  itineraryData.value = [
-    { day: 1, locations: locations.value.slice(0, 2) }, // DAY1包含前两个地点
-    { day: 2, locations: locations.value.slice(1, 3) }, // DAY2包含第二和第三个地点
-    { day: 3, locations: locations.value.slice(0, 1) }, // DAY3包含第一个地点
+    {
+      name: '福州站',
+      type: '交通',
+      address: '福州市晋安区华林路502号',
+      thumbnail: '/static/logo.png',
+      isSelected: false, // 添加 isSelected 属性
+    },
+    {
+      name: '三坊七巷',
+      type: '景点',
+      address: '福州市鼓楼区三坊七巷',
+      thumbnail: '/static/logo.png',
+      isSelected: false, // 添加 isSelected 属性
+    },
   ];
 };
 
@@ -376,10 +299,9 @@ const toggleSelection = (dayIndex, locationIndex) => {
   const day = itineraryData.value[dayIndex];
   const location = day.locations[locationIndex];
   if (location) {
-    location.isSelected = location.isSelected === 1 ? 0 : 1; // 如果是选中状态则切换为未选中
+    location.isSelected = !location.isSelected; // 切换选中状态
   }
 };
-
 
 // 切换行程和地点标签
 const toggleTab = (tab) => {
@@ -391,7 +313,7 @@ const toggleTab = (tab) => {
     showLocationConfirm.value = true;
     showItineraryConfirm.value = false;
   }
-}
+};
 
 // 选择行程的天数
 const selectDay = (day) => {
@@ -404,10 +326,7 @@ const closePage = () => {
     url: '/pages/create_method/create_method' // 根据你的实际路径修改
   });
 };
-
 </script>
-
-
 
 <style scoped>
 /* 页面整体布局 */
@@ -447,14 +366,14 @@ const closePage = () => {
   background-color: #fff;
   border-radius: 50rpx;
   box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* 确保圆角效果生效 */
+  overflow: hidden;
 }
 
 .link-image {
-  width: 90px; /* 固定宽度，使其为正方形 */
-  height: 100%; /* 占满链接框的高度 */
-  object-fit: cover; /* 保持图片比例填充 */
-  border-radius: 50rpx 0 0 50rpx; /* 左侧圆角 */
+  width: 90px;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50rpx 0 0 50rpx;
 }
 
 .link-title {
@@ -464,32 +383,30 @@ const closePage = () => {
   padding-left: 20rpx;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* 文字过长时显示省略号 */
+  text-overflow: ellipsis;
 }
-
-
 
 /* 警告提示 */
 .warning-box {
-  width: 100%; /* 控制宽度以适应不同屏幕 */
-  max-width: 900rpx; /* 设置最大宽度 */
-  margin: 0 auto; /* 水平居中 */
+  width: 100%;
+  max-width: 900rpx;
+  margin: 0 auto;
   margin-left: -20rpx;
   margin-top: 20rpx;
   margin-bottom: 20rpx;
   display: flex;
   align-items: center;
-  justify-content: center; /* 水平居中对齐内部内容 */
+  justify-content: center;
 }
 
 .warning-icon {
-  width: 50rpx; /* 调整图标尺寸更显眼 */
+  width: 50rpx;
   height: 50rpx;
   margin-right: 15rpx;
 }
 
 .warning-text {
-  font-size: 17px; /* 调整字体大小 */
+  font-size: 17px;
   font-style: italic;
   color: #ff6f00;
 }
@@ -497,13 +414,12 @@ const closePage = () => {
 /* 行程和地点概览 */
 .overview {
   display: flex;
-  justify-content: flex-start; /* 左对齐 */
+  justify-content: flex-start;
   align-items: center;
-  padding-left: 30rpx; /* 添加左边距 */
+  padding-left: 30rpx;
   margin: 20rpx 0;
 }
 
-/* 行程和地点概览 */
 .overview-text {
   font-size: 45rpx;
   color: #888;
@@ -513,30 +429,23 @@ const closePage = () => {
 }
 
 .active-obview-text {
-  color: #000; /* 黑色 */
+  color: #000;
   font-weight: bold;
 }
 
 /* 分割线 */
 .divider-line {
-  width: 100%; /* 覆盖整个页面宽度 */
-  height: 2rpx; /* 分割线厚度 */
-  background-color: #e0e0e0; /* 灰色 */
-  margin: 10rpx 0; /* 上下间距 */
-}
-
-
-.divider {
-  font-size: 28px;
-  color: #888;
+  width: 100%;
+  height: 2rpx;
+  background-color: #e0e0e0;
+  margin: 10rpx 0;
 }
 
 /* 行程选择框 */
 .itinerary-selection {
   display: flex;
   flex-direction: row;
-  justify-content: space-left;
-  margin-top: -10rpx;
+  justify-content: flex-start;
   margin-bottom: 20rpx;
 }
 
@@ -552,37 +461,22 @@ const closePage = () => {
   border: 1px solid #ccc;
   cursor: pointer;
   font-size: 26rpx;
-  width: 80rpx; /* 设置固定宽度 */
+  width: 80rpx;
 }
-
 
 .active-itinerary-box {
   background-color: #000;
   color: #fff;
-<<<<<<< HEAD
   font-weight: bold;
 }
 
-.active-text {
-  font-family: 'TaipeiSansTCBeta', sans-serif;
-  color: #000;
-  font-weight: bold;
-}
-
-/* 行程选择框样式 */
-=======
-  font-weight: bold;
-}
-
->>>>>>> a4deaf19a539d55028e7c1e375383790eef42be1
 .tab-content {
   display: flex;
-  flex-direction: column; /* 保证子元素垂直排列 */
+  flex-direction: column;
   padding: 20rpx;
   padding-bottom: 130rpx;
-  position: relative;  /* 添加这个 */
+  position: relative;
 }
-
 
 .tab-text {
   font-size: 28rpx;
@@ -590,26 +484,19 @@ const closePage = () => {
 }
 
 .day-heading {
-  font-size: 55rpx;  /* 调整字体大小 */
-  font-weight: bold; /* 设置加粗 */
-  color: #333; /* 保持颜色不变 */
-  padding-left: 10px; /* 添加 !important 确保优先级 */
+  font-size: 55rpx;
+  font-weight: bold;
+  color: #333;
+  padding-left: 10px;
 }
 
 /* 地点列表 */
-.location-list {
-  flex-grow: 1;
-  padding: 10rpx;
-  max-height: 500rpx; /* 控制滚动区域高度 */
-  overflow-y: auto; /* 增加滚动条 */
-}
-
 .location-item {
   display: flex;
   align-items: flex-start;
   padding: 20rpx;
   margin-left: 0rpx;
-} 
+}
 
 .location-thumbnail {
   width: 120rpx;
@@ -623,34 +510,34 @@ const closePage = () => {
   height: 100%;
   object-fit: cover;
   border-radius: 40rpx;
-  margin-left: -5 rpx;
-  border: 1px solid #888; /* 添加边框样式 */
+  margin-left: -5rpx;
+  border: 1px solid #888;
 }
 
 .location-info {
   flex-grow: 1;
   display: flex;
-  flex-direction: column; /* 垂直布局 */
+  flex-direction: column;
 }
 
 .location-name {
   font-size: 23px;
   color: #000;
   margin-top: 10rpx;
-  margin-bottom: 5rpx; /* 增加下方间距 */
+  margin-bottom: 5rpx;
 }
 
 .location-type {
   font-size: 26rpx;
   color: #888;
   font-weight: bold;
-  margin-top: 18rpx; /* 增加上方间距 */
-}
-.location-address {
-  color: #000; /* 黑色 */
-  font-size: 24rpx;
+  margin-top: 18rpx;
 }
 
+.location-address {
+  color: #000;
+  font-size: 24rpx;
+}
 
 /* 选择框样式 */
 .select-icon-container {
@@ -658,7 +545,7 @@ const closePage = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin-left: 20rpx; /* 让选择圆圈在右侧有一些间距 */
+  margin-left: 20rpx;
   margin-top: 20rpx;
 }
 
@@ -666,7 +553,6 @@ const closePage = () => {
   width: 60rpx;
   height: 60rpx;
 }
-
 
 .confirm-box {
   position: fixed;
@@ -708,6 +594,6 @@ const closePage = () => {
 }
 
 body {
-  font-family: sans-serif; /* 默认字体 */
+  font-family: sans-serif;
 }
 </style>
