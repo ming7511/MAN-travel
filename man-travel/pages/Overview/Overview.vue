@@ -13,8 +13,9 @@
     <view class="white-rectangle">
       <!-- 行程天数按钮 -->
       <view class="day-buttons">
+        <!-- 行程天数按钮 -->
         <button v-for="(day, index) in days" :key="index" :class="['day-button', { active: currentDay === day }]"
-          @click="setCurrentDay(day)">{{ day }}</button>
+          @click="handleDayClick(day)">{{ day }}</button>
       </view>
       <!-- 行程概览标题 -->
       <view class="overview-title">行程概览</view>
@@ -22,7 +23,7 @@
       <div id="map-container" class="map-container"></div>
       <!-- 每天行程信息 -->
       <view class="daily-trips">
-        <view v-for="(dayTrip, index) in dailyTrips" :key="index" class="daily-trip">
+        <view v-for="(dayTrip, index) in dailyTrips" :key="index" class="daily-trip" @click="handleDayClick(dayTrip.day)">
           <view class="day-label">{{ dayTrip.day }}</view>
           <view class="city-label">{{ dayTrip.city }}</view>
           <view class="places-label">{{ dayTrip.places }}</view>
@@ -30,6 +31,7 @@
         <!-- 待规划行程 -->
         <view class="to-plan-trip">待规划</view>
       </view>
+
     </view>
     <!-- 天气预报标题 -->
     <view class="weather-title">天气预报</view>
@@ -207,131 +209,159 @@ data() {
   };
 },
 
-mounted() {
-  const route = useRoute();
-  const tripId = route.query.id; // 获取当前路由中的行程ID
-  const trip = this.tripsById[tripId]; // 根据ID获取相应行程的数据
-
-  if (trip) {
-    // 初始化行程相关数据
-    this.tripTitle = trip.title;
-    this.travelDateRange = trip.dateRange;
-    this.tripDuration = trip.duration;
-    this.places = trip.places;
-    this.weatherForecast = trip.weather;
-
-    // 根据 duration 动态生成天数按钮
-    const dayCount = parseInt(this.tripDuration.split('天')[0]);
-    this.days = ['总览', ...Array.from({ length: dayCount }, (_, i) => `DAY${i + 1}`)];
-
-    // 填充每日行程数据（根据 trip.dailyTrips 来进行动态生成）
-    this.dailyTrips = trip.dailyTrips || [];  // 这里使用行程数据的 dailyTrips（可为空）
-
-    // 初始化地图，设置中心为第一天第一个地点的坐标
-    this.initMap(trip.placeCoordinates);
-  }
-},
-
-methods: {
-  // 初始化地图，并加载行程坐标
-  initMap(placeCoordinates) {
-    const that = this;
-
-    AMapLoader.load({
-      key: 'd702b20c1d0b7a34eaffae39500d2210', // 替换为你的高德地图 API 密钥
-      version: '2.0',
-      plugins: ['AMap.ToolBar']
-    }).then((AMap) => {
-      that.map = new AMap.Map('map-container', {
-        center: [119.306238, 26.075302], // 默认中心位置，可以改为从行程数据中获取第一天第一个地点坐标
-        zoom: 12
-      });
-      that.map.addControl(new AMap.ToolBar());
-
-      // 用于存储每天行程区域的标记
-      const dayMarkers = [];
-      // 定义每天行程对应的颜色（示例颜色，可根据喜好修改）
-      const dayColors = {
-        DAY1: '#FF5733',
-        DAY2: '#33FF57',
-        DAY3: '#5733FF'
-      };
-
-      // 遍历每天行程信息，添加标记和连线
-      this.dailyTrips.forEach((dayTrip) => {
-        const places = dayTrip.places.split(' - ');
-        let prevMarker = null;
-        places.forEach((place) => {
-          const coordinates = placeCoordinates[place];
-          if (coordinates) {
-            const marker = new AMap.Marker({
-              position: coordinates,
-              map: that.map,
-              title: place
-            });
-            if (prevMarker) {
-              // 根据当天行程设置连线颜色
-              const polyline = new AMap.Polyline({
-                path: [prevMarker.getPosition(), marker.getPosition()],
-                map: that.map,
-                strokeColor: dayColors[dayTrip.day],
-                strokeWeight: 6
-              });
-            }
-            prevMarker = marker;
-          }
-        });
-      });
-
-      // 设置地图中心为第一天第一个地点
-      const firstDayTrip = that.dailyTrips[0];
-      if (firstDayTrip) {
-        const firstPlace = firstDayTrip.places.split(' - ')[0]; // 获取第一天第一个地点
-        const coordinates = placeCoordinates[firstPlace];
-        if (coordinates) {
-          that.map.setCenter(coordinates); // 设置地图中心为该地点
-          that.map.setZoom(12); // 设置适当的缩放级别
-        }
-      }
-    });
-  },
-
-  // 设置当前展示的天数
-  setCurrentDay(day) {
-    this.currentDay = day;
-
-    const tripId = this.$route.query.id;  // 获取当前行程 ID
-    const trip = this.tripsById[tripId]; // 根据 ID 获取行程数据
+  mounted() {
+    const route = useRoute();
+    const tripId = route.query.id; // 获取当前路由中的行程ID
+    const trip = this.tripsById[tripId]; // 根据ID获取相应行程的数据
 
     if (trip) {
-      // 如果选择的是具体的天数（例如 DAY1, DAY2, ...）
-      if (day !== '总览') {
-        const selectedTrip = this.dailyTrips.find((trip) => trip.day === day); // 获取对应天的行程数据
-        if (selectedTrip) {
-          // 获取该天行程的第一个地点
-          const firstPlace = selectedTrip.places.split(' - ')[0];
+      // 初始化行程相关数据
+      this.tripTitle = trip.title;
+      this.travelDateRange = trip.dateRange;
+      this.tripDuration = trip.duration;
+      this.places = trip.places;
+      this.weatherForecast = trip.weather;
+
+      // 根据 duration 动态生成天数按钮
+      const dayCount = parseInt(this.tripDuration.split('天')[0]);
+      this.days = ['总览', ...Array.from({ length: dayCount }, (_, i) => `DAY${i + 1}`)];
+
+      // 填充每日行程数据（根据 trip.dailyTrips 来进行动态生成）
+      this.dailyTrips = trip.dailyTrips || [];  // 这里使用行程数据的 dailyTrips（可为空）
+
+      // 初始化地图，设置中心为第一天第一个地点的坐标
+      this.initMap(trip.placeCoordinates);
+    }
+  },
+
+  methods: {
+    // 初始化地图，并加载行程坐标
+    initMap(placeCoordinates) {
+      const that = this;
+
+      AMapLoader.load({
+        key: 'd702b20c1d0b7a34eaffae39500d2210', // 替换为你的高德地图 API 密钥
+        version: '2.0',
+        plugins: ['AMap.ToolBar']
+      }).then((AMap) => {
+        that.map = new AMap.Map('map-container', {
+          center: [119.306238, 26.075302], // 默认中心位置，可以改为从行程数据中获取第一天第一个地点坐标
+          zoom: 12
+        });
+        that.map.addControl(new AMap.ToolBar());
+
+        // 用于存储每天行程区域的标记
+        const dayMarkers = [];
+        // 定义每天行程对应的颜色（示例颜色，可根据喜好修改）
+        const dayColors = {
+          DAY1: '#FF5733',
+          DAY2: '#33FF57',
+          DAY3: '#5733FF'
+        };
+
+        // 遍历每天行程信息，添加标记和连线
+        this.dailyTrips.forEach((dayTrip) => {
+          const places = dayTrip.places.split(' - ');
+          let prevMarker = null;
+          places.forEach((place) => {
+            const coordinates = placeCoordinates[place];
+            if (coordinates) {
+              const marker = new AMap.Marker({
+                position: coordinates,
+                map: that.map,
+                title: place
+              });
+              if (prevMarker) {
+                // 根据当天行程设置连线颜色
+                const polyline = new AMap.Polyline({
+                  path: [prevMarker.getPosition(), marker.getPosition()],
+                  map: that.map,
+                  strokeColor: dayColors[dayTrip.day],
+                  strokeWeight: 6
+                });
+              }
+              prevMarker = marker;
+            }
+          });
+        });
+
+        // 设置地图中心为第一天第一个地点
+        const firstDayTrip = that.dailyTrips[0];
+        if (firstDayTrip) {
+          const firstPlace = firstDayTrip.places.split(' - ')[0]; // 获取第一天第一个地点
+          const coordinates = placeCoordinates[firstPlace];
+          if (coordinates) {
+            that.map.setCenter(coordinates); // 设置地图中心为该地点
+            that.map.setZoom(12); // 设置适当的缩放级别
+          }
+        }
+      });
+    },
+
+    // 点击行程天数按钮后的跳转逻辑
+      handleDayClick(day) {
+        const tripId = this.$route.query.id; // 获取当前行程 ID
+        const trip = this.tripsById[tripId]; // 根据 ID 获取行程数据
+      
+        if (day !== '总览') {
+          const selectedTrip = this.dailyTrips.find((trip) => trip.day === day); // 获取对应天的行程数据
+          if (selectedTrip) {
+            let places = selectedTrip.places; // 获取当天行程的地点信息
+      
+            // 确保 places 是数组，如果 places 是字符串，使用 split() 转换为数组
+            const placesArray = Array.isArray(places) ? places : places.split(' - ');
+      
+            // 对 places 参数进行 URL 编码，确保传递过程中不受特殊字符影响
+            const placesEncoded = encodeURIComponent(placesArray.join(' - '));
+      
+            // 使用 uni.navigateTo 跳转到 DayDetail 页面，传递 day, places, tripTitle, travelDateRange 和 duration 参数
+            uni.navigateTo({
+              url: `/pages/DayDetail/DayDetail?day=${day}&id=${tripId}&places=${placesEncoded}&title=${encodeURIComponent(trip.title)}&dateRange=${encodeURIComponent(trip.dateRange)}&duration=${encodeURIComponent(trip.duration)}`
+            });
+          }
+        } else {
+          // 如果点击的是总览，保持在当前页面并更新视图
+          this.setCurrentDay(day);
+        }
+      },
+
+
+    // 设置当前展示的天数
+    setCurrentDay(day) {
+      this.currentDay = day;
+
+      const tripId = this.$route.query.id;  // 获取当前行程 ID
+      const trip = this.tripsById[tripId]; // 根据 ID 获取行程数据
+
+      if (trip) {
+        // 如果选择的是具体的天数（例如 DAY1, DAY2, ...）
+        if (day !== '总览') {
+          const selectedTrip = this.dailyTrips.find((trip) => trip.day === day); // 获取对应天的行程数据
+          if (selectedTrip) {
+            // 获取该天行程的第一个地点
+            const firstPlace = selectedTrip.places.split(' - ')[0];
+            const coordinates = trip.placeCoordinates[firstPlace]; // 获取该地点的坐标
+            if (coordinates) {
+              this.map.setCenter(coordinates); // 设置地图中心为该地点
+              this.map.setZoom(14); // 设置缩放级别
+            }
+          }
+        } else {
+          // 当选择“总览”时，设置地图中心为第一天的第一个地点
+          const firstDayTrip = this.dailyTrips[0]; // 获取第一天的行程数据
+          const firstPlace = firstDayTrip.places.split(' - ')[0]; // 获取第一天第一个地点
           const coordinates = trip.placeCoordinates[firstPlace]; // 获取该地点的坐标
           if (coordinates) {
             this.map.setCenter(coordinates); // 设置地图中心为该地点
-            this.map.setZoom(14); // 设置缩放级别
+            this.map.setZoom(12); // 设置总览级别的地图缩放
           }
-        }
-      } else {
-        // 当选择“总览”时，设置地图中心为第一天的第一个地点
-        const firstDayTrip = this.dailyTrips[0]; // 获取第一天的行程数据
-        const firstPlace = firstDayTrip.places.split(' - ')[0]; // 获取第一天第一个地点
-        const coordinates = trip.placeCoordinates[firstPlace]; // 获取该地点的坐标
-        if (coordinates) {
-          this.map.setCenter(coordinates); // 设置地图中心为该地点
-          this.map.setZoom(12); // 设置总览级别的地图缩放
         }
       }
     }
   }
-}
-
 };
 </script>
+
 
 
 <style lang="scss">
