@@ -37,10 +37,16 @@
         <span class="arrow-symbol">></span>
       </div>
     </div>
+
+    <!-- 底部导航栏 -->
+    <BottomNav />
   </div>
 </template>
 
 <script setup>
+// 引入 BottomNav 组件
+import BottomNav from '/BottomNav-user.vue';
+
 // 跳转到编辑页面
 const goToEditPage = () => {
   uni.navigateTo({
@@ -66,8 +72,12 @@ const goToAboutUs = () => {
 <style scoped>
 .profile-page {
   padding: 20px;
+  padding-top: 100px; /* 为顶部留出足够的空间 */
+  padding-bottom: 0px; /* 为底部导航栏留出空间 */
   background-color: #f8f8f8;
-  height: 100vh;
+  min-height: 80vh; /* 使用 min-height 而不是 height 来确保页面的内容能滚动 */
+  display: flex;
+  flex-direction: column;
 }
 
 .profile-header {

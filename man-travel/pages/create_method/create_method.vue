@@ -52,6 +52,16 @@ export default {
         uni.navigateTo({
           url: '/pages/create_method/create_linkimport/create_linkimport' // 新页面路径
         });
+      } else if (action === '自定义行程') {
+        // 跳转到 'self_create' 页面
+        uni.navigateTo({
+          url: '/pages/create_method/self_create/self_create' // 新页面路径
+        });
+      } else if (action === 'AI推荐') {
+        // 跳转到 'self_create' 页面
+        uni.navigateTo({
+          url: '/pages/create_method/ai_create/ai_create' // 新页面路径
+        });
       } else {
         // 显示点击了哪个按钮的提示
         uni.showToast({
@@ -61,9 +71,11 @@ export default {
       }
     },
     close() {
-      // 返回上一页
-      uni.navigateBack(); 
+      uni.navigateTo({
+        url: '/pages/index/index'  // 这里填写你想返回的页面路径
+      });
     }
+
   }
 };
 </script>
