@@ -82,6 +82,12 @@ const pastTrips = ref([
 ]);
 
 const goToOverview = (trip) => {
+	console.log('这是主页'); // 打印 token 到控制台
+  // 获取并打印 token
+	const token = uni.getStorageSync('access_token'); // 获取存储的 token
+	console.log('这是主页'); // 打印 token 到控制台
+	console.log('Access Token:', token); // 打印 token 到控制台
+	  
   // 传递行程的 id 到 Overview 页面
   uni.navigateTo({
     url: `/pages/Overview/Overview?id=${trip.id}`

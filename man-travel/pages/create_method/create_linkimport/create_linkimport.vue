@@ -31,11 +31,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
+// 定义变量接收旅行数据
 const inputText = ref('');
-const startY = ref(0);
-const isSliding = ref(false);
+const travelData = ref(null); // 用于存储传递过来的旅行数据
 
 // 触摸事件处理
 const handleTouchStart = (e) => {
@@ -91,11 +91,31 @@ const handleConfirm = () => {
   });
 };
 
-// 关闭当前页面
-const handleClose = () => {
-  closeInputBox();
-};
+// 在页面加载时获取传递的数据
+onMounted(() => {
+  // 使用 uni.getLaunchOptionsSync 获取页面启动时的参数
+  const options = uni.getLaunchOptionsSync();
+  console.log('页面启动参数:', options); // 输出参数调试
+
+  const data = options.query.data;  // 获取 URL 查询参数中的 "data"
+  console.log('URL参数 data:', data);
+
+  if (data) {
+    // 将字符串转换为对象
+    try {
+      travelData.value = JSON.parse(decodeURIComponent(data)); // 解码并解析
+      console.log('接收到的旅行数据:', travelData.value); // 输出接收到的数据
+    } catch (error) {
+      console.error('数据解析失败:', error); // 处理数据解析错误
+    }
+  } else {
+    console.log('没有接收到旅行数据');
+  }
+});
 </script>
+
+
+
 
 <style scoped>
 /* 页面容器 */
