@@ -31,13 +31,14 @@
         <text class="selection-text">日期</text>
       </view>
     </view>
-<!-- 横线部分拆分为两部分：左边和右边 -->
-<view class="selection-line-container">
-  <!-- 左边的横线 (天数部分) -->
-  <view class="selection-line" :class="{'active': isDaySelected}" style="left: 0;"></view>
-  <!-- 右边的横线 (日期部分) -->
-  <view class="selection-line" :class="{'active': isDateSelected}" style="left: 50%;"></view>
-</view>
+
+    <!-- 横线部分拆分为两部分：左边和右边 -->
+    <view class="selection-line-container">
+      <!-- 左边的横线 (天数部分) -->
+      <view class="selection-line" :class="{'active': isDaySelected}" style="left: 0;"></view>
+      <!-- 右边的横线 (日期部分) -->
+      <view class="selection-line" :class="{'active': isDateSelected}" style="left: 50%;"></view>
+    </view>
 
     <!-- 滚动容器，仅包裹天数和日期选择部分 -->
     <view class="scroll-container">
@@ -88,31 +89,33 @@
   </view>
 </template>
 
-
 <script setup>
 import { ref, onMounted } from 'vue';
+import { v4 as uuidv4 } from 'uuid'; // 导入用于生成唯一 ID 的库
 
+// 星期数据
 const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 
 // 存储未来 12 个月的数据
 const twelveMonthsData = ref([]);
 
+// 计算未来 12 个月的数据
 const calculateTwelveMonthsData = () => {
   const today = new Date();
   const monthsData = [];
 
   for (let i = 0; i < 12; i++) {
     const year = today.getFullYear();
-    const month = today.getMonth() + i; // 从当前月份开始计算
+    const month = today.getMonth() + i;
 
     // 计算正确的年月（支持跨年）
     const displayYear = year + Math.floor(month / 12);
     const displayMonth = (month % 12) + 1;
 
-    const firstDay = new Date(displayYear, displayMonth - 1, 1).getDay(); // 当月第一天是星期几
-    const daysInMonth = new Date(displayYear, displayMonth, 0).getDate(); // 获取当月的天数
+    const firstDay = new Date(displayYear, displayMonth - 1, 1).getDay();
+    const daysInMonth = new Date(displayYear, displayMonth, 0).getDate();
 
-    const dates = Array(firstDay).fill(null); // 前面空白部分填充
+    const dates = Array(firstDay).fill(null); // 填充空白部分
     for (let d = 1; d <= daysInMonth; d++) {
       dates.push(d);
     }
@@ -140,24 +143,23 @@ const selectDay = (day) => {
 
 // 选择日期范围
 const selectDate = (day, year, month) => {
-  if (!day) return; // 如果没有选择日期，直接返回
+  if (!day) return;
 
   const date = new Date(year, month - 1, day);
 
   if (!startDate.value || (startDate.value && endDate.value)) {
-    // 如果还没有选择起始日期，或者起始和终止日期都已经被选择，则重新选择起始日期
     startDate.value = date;
     endDate.value = null; // 重置结束日期
   } else {
-    // 如果已有起始日期，则设置为结束日期
     if (date < startDate.value) {
-      // 如果选择的结束日期早于起始日期，则互换
       endDate.value = startDate.value;
       startDate.value = date;
     } else {
       endDate.value = date;
     }
   }
+
+  console.log(`选择的日期范围：起始日期 ${startDate.value}, 结束日期 ${endDate.value || "未选择"}`);
 };
 
 // 判断是否为选中范围内的日期
@@ -178,79 +180,104 @@ onMounted(() => {
 });
 
 // 从缓存中获取用户选择的城市
-const locationInput = ref('');
-const dates = ref(Array(30).fill(''));
-const showDayPicker = ref(true); // 默认显示天数选择
-const showDatePicker = ref(false); // 默认不显示日期选择
-const isDaySelected = ref(true); // 默认选择 "天数"
-const isDateSelected = ref(false); // 默认不选择 "日期"
+const locationInput = ref(''); // 用户输入的城市
+const showDayPicker = ref(true);
+const showDatePicker = ref(false);
+const isDaySelected = ref(true);
+const isDateSelected = ref(false);
 
 // 关闭页面方法
 const closePage = () => {
-  uni.navigateBack(); // 返回上一页或关闭页面
+  uni.navigateBack();
 };
 
 // 开始规划旅行
+const tripsById = ref({});
+
+// 规划旅行的方法
 const startPlanning = () => {
   const travelData = {};
 
+  // 生成唯一的行程 ID
+  const tripId = uuidv4();
+  travelData.tripId = tripId;
+
+  // 设置目的地
+  travelData.location = locationInput.value;
+
+  // 检查用户是否选择了目的地
+  if (!travelData.location || travelData.location === '未选择城市') {
+    uni.showToast({
+      title: '请选择旅行目的地',
+      icon: 'none'
+    });
+    return;
+  }
+
   // 如果用户选择了日期，优先使用日期信息
-  if (startDate.value) {
-    const dayCount = endDate.value
-      ? (endDate.value - startDate.value) / (1000 * 60 * 60 * 24) + 1 // 计算日期之间的天数
-      : 1;
-
+  if (startDate.value && endDate.value) {
     travelData.startDate = startDate.value;
-    travelData.endDate = endDate.value || startDate.value;
-    travelData.dayCount = dayCount;
-
-    console.log('选择了日期: ', {
-      startDate: travelData.startDate,
-      endDate: travelData.endDate,
-      dayCount: travelData.dayCount,
+    travelData.endDate = endDate.value;
+    travelData.duration = Math.ceil((endDate.value - startDate.value) / (1000 * 3600 * 24)) + 1; // 计算天数，包括起始和终止日期
+  } else if (selectedDay.value) {
+    // 否则，使用天数信息
+    travelData.duration = selectedDay.value;
+    travelData.startDate = new Date();
+    travelData.endDate = new Date(new Date().getTime() + (selectedDay.value - 1) * 24 * 60 * 60 * 1000); // 计算结束日期
+  } else {
+    uni.showToast({
+      title: '请选择行程天数或日期',
+      icon: 'none'
     });
+    return;
   }
 
-  // 如果用户只选择了天数（没有选择日期）
-  if (!startDate.value && selectedDay.value) {
-    travelData.dayCount = selectedDay.value;
+  // 假设可以从其他地方获取地点信息、每日行程和天气数据
+  const places = []; // 旅行地点
+  const dailyTrips = []; // 每日行程
+  const weather = []; // 天气预报
 
-    console.log('选择了天数: ', {
-      dayCount: travelData.dayCount,
-    });
-  }
+  // 将这些数据也添加到行程数据中
+  travelData.places = places;
+  travelData.dailyTrips = dailyTrips;
+  travelData.weather = weather;
 
-  // 如果用户既选择了天数又选择了日期，按日期选择为主
-  if (startDate.value && selectedDay.value) {
-    console.log('同时选择了天数和日期，按日期为主');
-  }
+  // 将行程存储到 tripsById
+  tripsById.value[tripId] = travelData;
 
-  // 启动导航到计划页面并传递数据
+  // 输出行程信息到控制台
+  console.log('创建行程成功：', {
+    tripId: travelData.tripId,
+    location: travelData.location,
+    startDate: travelData.startDate.toLocaleDateString(),
+    endDate: travelData.endDate.toLocaleDateString(),
+    duration: `${travelData.duration} 天`,
+  });
+
+  // 跳转到行程初始化页面，并通过 URL 参数传递数据
   uni.navigateTo({
-    url: `/pages/planPage/planPage?data=${JSON.stringify(travelData)}`,
+    url: `/pages/init/init?tripId=${tripId}&location=${encodeURIComponent(travelData.location)}&startDate=${travelData.startDate.toISOString()}&endDate=${travelData.endDate.toISOString()}&duration=${travelData.duration}&places=${encodeURIComponent(JSON.stringify(places))}&dailyTrips=${encodeURIComponent(JSON.stringify(dailyTrips))}&weather=${encodeURIComponent(JSON.stringify(weather))}`
   });
 };
 
-// 切换选择 "天数" 或 "日期"
-const toggleSelection = (type) => {
-  if (type === 'day') {
-    isDaySelected.value = true;
-    isDateSelected.value = false;
+// 切换选择天数或日期
+const toggleSelection = (selection) => {
+  if (selection === 'day') {
     showDayPicker.value = true;
     showDatePicker.value = false;
-  } else if (type === 'date') {
-    isDaySelected.value = false;
-    isDateSelected.value = true;
+    isDaySelected.value = true;
+    isDateSelected.value = false;
+  } else if (selection === 'date') {
     showDayPicker.value = false;
     showDatePicker.value = true;
+    isDaySelected.value = false;
+    isDateSelected.value = true;
   }
 };
 
-
-
 // 初始化地点信息，假设是从上一页传递过来的
 onMounted(() => {
-  locationInput.value = uni.getStorageSync('selectedCity') || '未选择城市'; // 从缓存中获取城市
+  locationInput.value = uni.getStorageSync('selectedCity') || '未选择城市';
 });
 </script>
 

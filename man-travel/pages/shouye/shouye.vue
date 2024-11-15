@@ -2,9 +2,9 @@
   <view class="travel-plan-overview-page">
 	  
 	<!-- 返回按钮容器 -->
-	    <view class="back-button-container">
-	      <image src="/static/icons/back-icon.png" class="back-button" @click="goBack" />
-	    </view>
+	<view class="back-button-container">
+		<image src="/static/icons/back-icon.png" class="back-button" @click="goBack" />
+	</view>
 	
     <!-- 行程名 -->
     <view class="trip-name">{{ tripTitle }}</view>

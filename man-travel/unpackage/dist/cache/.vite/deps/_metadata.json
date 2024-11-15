@@ -2,14 +2,30 @@
   "hash": "06b5e675",
   "configHash": "1f85b1ef",
   "lockfileHash": "221bcc88",
-  "browserHash": "e8e7811a",
+  "browserHash": "6ac732b4",
   "optimized": {
     "@amap/amap-jsapi-loader": {
       "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
       "file": "@amap_amap-jsapi-loader.js",
-      "fileHash": "d1382dca",
+      "fileHash": "fb8116b8",
       "needsInterop": true
+    },
+    "uuid": {
+      "src": "../../../../../pages/node_modules/uuid/dist/esm-browser/index.js",
+      "file": "uuid.js",
+      "fileHash": "c68ca13b",
+      "needsInterop": false
+    },
+    "axios": {
+      "src": "../../../../../pages/node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "dc53c70e",
+      "needsInterop": false
     }
   },
-  "chunks": {}
+  "chunks": {
+    "chunk-P2LSHJDD": {
+      "file": "chunk-P2LSHJDD.js"
+    }
+  }
 }

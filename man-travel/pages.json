@@ -35,6 +35,18 @@
 			}
 		},
 		{
+			"path": "pages/create_method/create_linkimport/create_linkimport_place",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/create_method/create_linkimport/create_linkimport_time",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
 			"path": "pages/create_method/import/import",
 			"style": {
 				"navigationBarTitleText": ""
@@ -145,6 +157,13 @@
 		},
 		{
 			"path" : "pages/addBill/addBill",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/init/init",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""

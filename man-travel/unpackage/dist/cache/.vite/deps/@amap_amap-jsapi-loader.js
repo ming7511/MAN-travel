@@ -1,7 +1,6 @@
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-};
+import {
+  __commonJS
+} from "./chunk-P2LSHJDD.js";
 
 // D:/电子垃圾/软件工程/MAN-travel/man-travel/node_modules/@amap/amap-jsapi-loader/dist/index.js
 var require_dist = __commonJS({

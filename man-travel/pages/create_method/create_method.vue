@@ -50,7 +50,7 @@ export default {
       if (action === '智能导入') {
         // 跳转到 'create_linkimport' 页面
         uni.navigateTo({
-          url: '/pages/create_method/create_linkimport/create_linkimport' // 新页面路径
+          url: '/pages/create_method/create_linkimport/create_linkimport_place' // 新页面路径
         });
       } else if (action === '自定义行程') {
         // 跳转到 'self_create' 页面
