@@ -1,18 +1,31 @@
 <template>
-  <view class="container">
-    <!-- 顶部导航栏 -->
-   <view class="header">
-     <text class="title">福州三日游 | 在三坊七巷感受榕城秋日古韵</text>
-     <text class="subtitle">10.1 - 10.3   3天2晚</text>
-      <view class="tabs">
-        <text class="tab-item">行程</text>
-        <text class="tab-item" @click="goToBillPage">旅行账单</text>
-        <text class="tab-item active">行李清单</text>
+  <view class="travel-plan-overview-page">
+     <!-- 返回按钮 -->
+         <view class="back-button-container">
+           <image src="/static/icons/back-icon.png" class="back-button" @click="goBack" />
+         </view>
+     
+         <!-- 行程名 -->
+         <view class="header">
+           <text class="trip-name">{{ tripTitle }}</text>
+         </view>
+    <!-- 旅行时间 -->
+    <view class="travel-time">{{ travelDateRange }}  {{ tripDuration }}</view>
+    <!-- 行程标题及横线 -->
+    <view class="trip-section">
+      <view class="button-group">
+        <!-- 行程按钮 -->
+        <button class="btn-title" @click="handleShowOverview">行程</button>
+        <!-- 旅行账单按钮 -->
+        <button class="btn-title" @click="goToBillPage">旅行账单</button>
+        <!-- 行李清单按钮 -->
+        <button class="btn-title active">行李清单</button>
       </view>
+      <view class="horizontal-line"></view>
     </view>
 
-    <!-- 行李清单内容 -->
-    <view class="packing-list">
+    <!-- 白色矩形区域 -->
+    <view class="white-rectangle packing-list">
       <!-- 标签列表 -->
       <view class="tags">
         <view class="tag-row">
@@ -41,93 +54,127 @@
 
 <script>
 export default {
+  data() {
+    return {
+      tripTitle: '【示例】福州三日游 | 在三坊七巷感受榕城秋日古韵',
+      travelDateRange: '11.01至11.03',
+      tripDuration: '3天2晚',
+      tripId: '1', // 假设当前页面的行程ID为1
+    };
+  },
   methods: {
-    goToBillPage() {
-      // 跳转到旅行账单页面
+	  goBack() {
+	        // 返回到首页 index.vue
+	        uni.navigateTo({
+	          url: '/pages/index/index'
+	        });
+	      },
+    handleShowOverview() {
+      // 跳转到行程页面
       uni.navigateTo({
-        url: '/pages/index/index' // 确保路径正确
+        url: `/pages/Overview/Overview?id=${this.tripId}`
+      });
+    },
+    goToBillPage() {
+      // 跳转到旅行账单页面，传递行程 ID
+      uni.navigateTo({
+        url: `/pages/shouye/shouye?id=${this.tripId}` // 确保路径正确，传递行程ID参数
       });
     },
     goToAddPage() {
       // 跳转到添加行李的页面
       uni.navigateTo({
-        url: '/pages/tianjia/tianjia' // 确保路径正确
+        url: `/pages/tianjia/tianjia?id=${this.tripId}` // 传递行程ID以便后续操作
       });
     }
   }
 };
 </script>
 
-<style>
+<style scoped>
 /* 页面整体样式 */
-.container {
-  background-color: #f4f7fa;
-  padding: 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 顶部导航栏样式 */
-.navbar {
+.travel-plan-overview-page {
   background-color: #e1f0ff;
   padding: 20px;
-  border-radius: 10px;
-  text-align: center;
 }
 
-.header {
-  background-color: #d8ecff;
-  padding: 20rpx;
-  border-radius: 10rpx;
-  text-align: left;
+/* 返回按钮容器样式 */
+.back-button-container {
+  margin-bottom: 10px; /* 设置与下方内容的间距 */
 }
 
-.title {
-  font-size: 36rpx; /* 设置标题字体大小 */
-  font-weight: bold;
-  color: #333;
-  line-height: 1.4; /* 增加行高，使标题和日期有间距 */
-}
-
-.subtitle {
-  font-size: 24rpx; /* 设置日期字体大小 */
-  color: #666;
-  margin-top: 8rpx; /* 增加与标题之间的间距 */
-  display: block; /* 确保日期独占一行 */
-}
-.sub-title {
-  font-size: 14px;
-  color: #888;
-  margin-top: 5px;
-}
-
-.tabs {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 15px;
-}
-
-.tab-item {
-  font-size: 16px;
-  color: #888;
+/* 返回按钮图标样式 */
+.back-button {
+  width: 30px;
+  height: 30px;
   cursor: pointer;
 }
 
-.tab-item.active {
-  color: #0066cc;
+/* 行程名样式 */
+.header {
+  margin-top: 10px; /* 设置与返回按钮的间距 */
+  margin-bottom: 10px; /* 设置与下方内容的间距 */
+}
+
+.trip-name {
+  font-size: 24px;
   font-weight: bold;
+  color: #333;
+}
+
+/* 旅行时间样式 */
+.travel-time {
+  font-size: 16px;
+  color: dimgray;
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+/* 行程标题及横线 */
+.trip-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.button-group {
+  display: flex;
+  gap: 20px;
+}
+
+.btn-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: black;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.btn-title.active {
+  color: #0066cc;
+}
+
+.horizontal-line {
+  width: 100%;
+  height: 1px;
+  background-color: gray;
+  margin-top: 10px;
+}
+
+/* 白色矩形区域样式 */
+.white-rectangle {
+  background-color: white;
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 20px;
 }
 
 /* 行李清单内容样式 */
 .packing-list {
   text-align: center;
-  margin-top: 20px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 
 /* 标签样式 */
@@ -135,7 +182,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px; /* 标签组之间的间距 */
+  gap: 10px;
   margin-bottom: 20px;
 }
 
@@ -145,17 +192,6 @@ export default {
   justify-content: center;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8); /* 缩放效果 */
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 /* 标签样式 */
 .tag {
   background-color: #e0f7fa;
@@ -163,28 +199,10 @@ export default {
   padding: 5px 10px;
   border-radius: 15px;
   font-size: 20px;
-  
   display: inline-flex;
   align-items: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin: 10px; /* 随机的 margin 值让每个标签错落有致 */
-
-  animation: fadeIn 0.5s ease-in-out; /* 应用淡入动画 */
-}
-/* 选中状态的样式 */
-.tag.checked {
-  background-color: #a0d8ef; /* 选中时的背景色 */
-  color: #007acc; /* 选中时的文字颜色 */
-  border: 1px solid #007acc; /* 选中时的边框颜色 */
-}
-.checkmark {
-  color: #007acc;
-  font-size: 16px;
-}
-
-.tag-text {
-  font-size: 14px;
-  color: #007acc;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 /* 插图样式 */
@@ -212,5 +230,17 @@ export default {
   border-radius: 20px;
   font-size: 16px;
   margin-top: 20px;
+}
+
+/* 标签动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

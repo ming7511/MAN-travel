@@ -1,14 +1,31 @@
 <template>
   <view class="travel-plan-overview-page">
-    <!-- 行程名 -->
-    <view class="trip-name">{{ tripTitle }}</view>
+    <!-- 返回按钮容器 -->
+        <view class="back-button-container">
+          <image src="/static/icons/back-icon.png" class="back-button" @click="goBack" />
+        </view>
+    
+        <!-- 行程名 -->
+        <view class="header">
+          <text class="trip-name">{{ tripTitle }}</text>
+        </view>
     <!-- 旅行时间 -->
     <view class="travel-time">{{ travelDateRange }}  {{ tripDuration }}</view>
     <!-- 行程标题及横线 -->
     <view class="trip-section">
-      <view class="trip-title">行程</view>
+      <view class="button-group">
+        <!-- 行程按钮 -->
+        <button class="btn-title" @click="handleShowOverview">行程</button>
+        <!-- 旅行账单按钮 -->
+        <button class="btn-title" @click="handleShouyeClick">旅行账单</button>
+        <!-- 行李清单按钮 -->
+        <button class="btn-title" @click="handleXingliClick">行李清单</button>
+      </view>
       <view class="horizontal-line"></view>
     </view>
+
+
+
     <!-- 白色矩形区域 -->
     <view class="white-rectangle">
       <!-- 行程天数按钮 -->
@@ -297,7 +314,14 @@ data() {
         }
       });
     },
-
+	
+	goBack() {
+	      // 返回到首页 index.vue
+	      uni.navigateTo({
+	        url: '/pages/index/index'
+	      });
+	    },
+		
     // 点击行程天数按钮后的跳转逻辑
       handleDayClick(day) {
         const tripId = this.$route.query.id; // 获取当前行程 ID
@@ -324,7 +348,28 @@ data() {
           this.setCurrentDay(day);
         }
       },
-
+	  
+	  // 点击“旅行账单”按钮的跳转逻辑
+	      handleShouyeClick() {
+	        const tripId = this.$route.query.id; // 获取当前行程 ID
+	        if (tripId) {
+	          this.$router.push({
+	            path: `/pages/shouye/shouye`, // 目标页面的路径
+	            query: { id: tripId } // 将行程 ID 作为查询参数传递
+	          });
+	        }
+	      },
+	  
+	      // 点击“行李清单”按钮的跳转逻辑
+	      handleXingliClick() {
+	        const tripId = this.$route.query.id; // 获取当前行程 ID
+	        if (tripId) {
+	          this.$router.push({
+	            path: `/pages/xingli/xingli`, // 目标页面的路径
+	            query: { id: tripId } // 将行程 ID 作为查询参数传递
+	          });
+	        }
+	      },
 
     // 设置当前展示的天数
     setCurrentDay(day) {
@@ -366,8 +411,27 @@ data() {
 
 <style lang="scss">
 .travel-plan-overview-page {
-  background-color: lightblue;
+  background-color: #e1f0ff;
   padding: 20px;
+
+
+/* 返回按钮容器样式 */
+.back-button-container {
+  margin-bottom: 10px; /* 设置与下方内容的间距 */
+}
+
+/* 返回按钮图标样式 */
+.back-button {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+/* 行程名样式 */
+.header {
+  margin-top: 10px; /* 设置与返回按钮的间距 */
+  margin-bottom: 10px; /* 设置与下方内容的间距 */
+}
 
   // 行程名样式
 .trip-name {
@@ -385,26 +449,52 @@ data() {
     margin-bottom: 10px;
   }
 
-  // 行程标题及横线所在区域样式
 .trip-section {
-    text-align: left;
-    margin-bottom: 10px;
+  display: flex; 
+  flex-direction: column; /* 使其内部子项垂直排列 */
+  align-items: flex-start; /* 确保内容从左侧对齐 */
+  text-align: left; /* 保证文本左对齐 */
+  border: none; /* 移除任何边框 */
+  padding: 0; /* 确保没有多余的内边距 */
 
-    // 行程标题样式
-.trip-title {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
 
-    // 横线样式
-.horizontal-line {
-      width: 100%;
-      height: 1px;
-      background-color: gray;
-    }
-  }
+ .button-group {
+   display: flex; /* 使用 flex 布局让按钮并排 */
+   align-items: center; /* 垂直居中对齐按钮文本 */
+   justify-content: flex-start; /* 水平方向左对齐 */
+   gap: 40rpx; /* 使用 rpx 确保按钮之间有合适的间距（适合小程序环境） */
+   margin-left: 15rpx; /* 确保按钮组容器没有左侧内边距或外边距 */
+   padding-left: 0; /* 确保没有额外的左侧填充 */
+ }
 
+ .btn-title {
+   font-size: 20px; /* 字体大小 */
+   font-weight: bold; /* 字体加粗 */
+   color: black; /* 黑色字体 */
+   background: none; /* 移除按钮的背景 */
+   border: none; /* 移除按钮的边框 */
+   outline: none; /* 去掉焦点时的边框 */
+   padding: 0; /* 无额外内边距 */
+   cursor: pointer; /* 鼠标悬浮显示手型 */
+   text-decoration: none; /* 去掉默认的文本装饰，比如下划线 */
+   transition: color 0.3s ease; /* 颜色渐变过渡效果 */
+ }
+ 
+ .btn-title:hover {
+   color: gray; /* 悬停时字体颜色变灰 */
+ }
+ 
+ .btn-title:focus {
+   outline: none; /* 点击时不显示边框 */
+ }
+ 
+   .horizontal-line {
+     width: 100%;
+     height: 1px;
+     background-color: gray;
+     margin-top: 10px; /* 保证横线和按钮之间有足够的间隔 */
+   }
+ }
   // 白色矩形区域样式
 .white-rectangle {
     background-color: white;
@@ -413,12 +503,12 @@ data() {
     margin-bottom: 20px;
 
     // 行程天数按钮样式
-.day-buttons {
+	.day-buttons {
       display: flex;
       justify-content: space-around;
       margin-bottom: 10px;
 
-  .day-button {
+    .day-button {
         padding: 1px 8px;
         border: 1px solid #808080; // 未点击时边框深灰色
         border-radius: 20px;
@@ -435,16 +525,19 @@ data() {
         }
       }
     }
+	
+
+
 
     // 行程概览标题样式
-.overview-title {
+	.overview-title {
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 10px;
     }
 
     // 地图容器样式
-.map-container {
+	.map-container {
       width: 100%;
       height: 200px; // 根据需求调整地图容器高度
       border-radius: 20px;
@@ -452,12 +545,12 @@ data() {
     }
 
     // 每天行程信息样式
-.daily-trips {
+	.daily-trips {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
 
-  .daily-trip {
+    .daily-trip {
         width: 100%; // 修改为占满父容器宽度
         height: 80px; // 设置固定高度为80px
         background-color: white;
@@ -483,7 +576,7 @@ data() {
         }
       }
 
-  .to-plan-trip {
+    .to-plan-trip {
         width: 100%;
         background-color: white;
         box-shadow: 0 0 5px lightgray;

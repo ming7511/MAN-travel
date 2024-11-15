@@ -2,6 +2,7 @@
   <view class="container">
     <!-- 顶部导航栏 -->
     <view class="navbar">
+      <view class="back-button" @click="goBack">＜</view>
       <text class="title">添加账单</text>
     </view>
 
@@ -15,13 +16,13 @@
       </view>
     </view>
 
-    <!-- 输入区域：日期选择、备注输入和金额显示 -->
+    <!-- 输入区域：日期选择、备注输入 -->
     <view class="input-section">
-      <!-- 日期选择按钮 -->
-      <view class="date-button" @click="chooseDate">选择日期: {{ date || '未选择' }}</view>
-      
-      <!-- 备注输入框 -->
-      <input class="remark-input" placeholder="在这里输入备注..." v-model="remark" />
+      <!-- 日期选择按钮和备注输入框 -->
+      <view class="date-remark-container">
+        <view class="date-button" @click="chooseDate">选择日期: {{ date || '未选择' }}</view>
+        <input class="remark-input" placeholder="在这里输入备注..." v-model="remark" />
+      </view>
       
       <!-- 显示金额 -->
       <view class="amount">
@@ -37,7 +38,7 @@
     </view>
 
     <!-- 完成按钮 -->
-    <button class="submit-button" type="primary" @click="submit">完成</button>
+    <button class="submit-button" @click="submit">完成</button>
   </view>
 </template>
 
@@ -58,7 +59,7 @@ export default {
       date: '',         // 存储选择的日期
       remark: '',       // 存储备注
       amount: "0.00",   // 存储金额
-      keys: ["1", "2", "3", "✖️", "4", "5", "6", "+", "7", "8", "9", "-", ".", "0", "=", "完成"],
+      keys: ["1", "2", "3", "✖️", "4", "5", "6", "+", "7", "8", "9", "-", ".", "0", "完成"],
     };
   },
   methods: {
@@ -101,6 +102,10 @@ export default {
         }
       }
     },
+    // 返回上一页
+    goBack() {
+      uni.navigateBack();
+    },
     // 完成提交
     submit() {
       uni.showToast({
@@ -112,7 +117,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 /* 页面整体样式 */
 .container {
   padding: 20px;
@@ -122,11 +127,24 @@ export default {
 
 /* 顶部导航栏样式 */
 .navbar {
-  text-align: center;
+  display: flex;
+  align-items: center;
   margin-bottom: 20px;
+  position: relative;
+}
+
+.back-button {
+  font-size: 20px;
+  margin-right: 10px;
+  color: #333;
+  cursor: pointer;
+  position: absolute;
+  left: 0;
 }
 
 .title {
+  flex: 1;
+  text-align: center;
   font-size: 20px;
   font-weight: bold;
   color: #333;
@@ -182,27 +200,34 @@ export default {
   margin-bottom: 20px;
 }
 
-.date-button {
+/* 日期和备注容器 */
+.date-remark-container {
+  display: flex;
   width: 100%;
+  margin-bottom: 10px;
+}
+
+.date-button {
+  flex: 1;
   padding: 10px;
   background-color: #f0f0f0;
   border-radius: 5px;
   font-size: 14px;
   color: #333;
-  margin-bottom: 10px;
   text-align: left;
 }
 
 .remark-input {
-  width: 100%;
+  flex: 2;
   padding: 10px;
   font-size: 14px;
   color: #333;
   background-color: #f9f9f9;
   border-radius: 5px;
-  margin-bottom: 10px;
+  margin-left: 10px;
 }
 
+/* 金额显示样式 */
 .amount {
   font-size: 24px;
   font-weight: bold;
@@ -233,13 +258,18 @@ export default {
 
 /* 完成按钮样式 */
 .submit-button {
-  width: 100%;
+  width: calc(100% - 80px); /* 减去左右的间距总和，确保按钮宽度合适 */
   padding: 12px;
   background-color: #4a90e2;
   color: white;
   font-size: 16px;
   border-radius: 5px;
   text-align: center;
-  margin-top: 20px;
+  position: fixed; /* 将按钮固定在页面底部 */
+  bottom: 50px; /* 距离页面底部 50px */
+  left: 50%; /* 按钮左边界位于页面的 50% 位置 */
+  transform: translateX(-50%); /* 将按钮向左移动自身宽度的一半，实现居中效果 */
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影提升可见性 */
+  z-index: 100; /* 确保按钮在最上层，不会被其他元素遮盖 */
 }
 </style>
