@@ -16,7 +16,7 @@
       <!-- 验证码输入框和按钮 -->
       <view class="verification-input-wrapper">
         <input type="text" placeholder="请输入验证码" class="input" v-model="verificationCode" />
-        <button class="verification-button" @click="getVerificationCode">获取验证码</button>
+        <button class="verification-button" @click="getVerificationCode" :disabled="isCodeButtonDisabled">{{ buttonText }}</button>
       </view>
     </view>
 
@@ -26,36 +26,116 @@
     </view>
   </view>
 </template>
+
 <script>
+import axios from 'axios';
+
 export default {
   name: "LoginPage",
   data() {
     return {
-      phoneNumber: '',
-      verificationCode: ''
+      phoneNumber: '',         // 用户输入的手机号
+      verificationCode: '',    // 用户输入的验证码
+      buttonText: '获取验证码',  // 按钮文本
+      isCodeButtonDisabled: false, // 控制按钮禁用
+      countdown: 60             // 倒计时
     };
   },
   methods: {
-    getVerificationCode() {
-      console.log("获取验证码");
-    },
-    login() {
-      // 可以在这里进行输入验证，例如判断手机号和验证码是否符合要求
-      if (this.phoneNumber && this.verificationCode) {
-        // 执行页面跳转到主页
-        uni.redirectTo({
-          url: '/pages/index/index'
+    // 获取验证码
+    async getVerificationCode() {
+      if (!this.phoneNumber) {
+        uni.showToast({
+          title: '手机号不能为空',
+          icon: 'none'
         });
-      } else {
+        return;
+      }
+
+      // 发起请求获取验证码
+      try {
+        const response = await axios.post('https://734dw56037em.vicp.fun/api/accounts/register/', {
+          phone: this.phoneNumber
+        });
+        uni.showToast({
+          title: response.data.message,
+          icon: 'none'
+        });
+
+        // 启动倒计时
+        this.startCountdown();
+      } catch (error) {
+        if (error.response && error.response.data) {
+          uni.showToast({
+            title: error.response.data.error || '验证码发送失败',
+            icon: 'none'
+          });
+        } else {
+          uni.showToast({
+            title: '请求失败，请稍后重试',
+            icon: 'none'
+          });
+        }
+      }
+    },
+
+    // 启动倒计时
+    startCountdown() {
+      this.isCodeButtonDisabled = true;
+      let countdownInterval = setInterval(() => {
+        if (this.countdown <= 0) {
+          clearInterval(countdownInterval);
+          this.isCodeButtonDisabled = false;
+          this.countdown = 60;
+          this.buttonText = '获取验证码';
+        } else {
+          this.countdown--;
+          this.buttonText = `${this.countdown}s 后重新获取`;
+        }
+      }, 1000);
+    },
+
+    // 用户登录
+    async login() {
+      if (!this.phoneNumber || !this.verificationCode) {
         uni.showToast({
           title: '请输入手机号和验证码',
           icon: 'none'
         });
+        return;
+      }
+
+      try {
+        const response = await axios.post('https://734dw56037em.vicp.fun/api/accounts/login/', {
+          phone: this.phoneNumber,
+          code: this.verificationCode
+        });
+        // 登录成功后保存 Token 并跳转到主页
+        const { access, refresh } = response.data;
+        uni.setStorageSync('access_token', access);
+        uni.setStorageSync('refresh_token', refresh);
+
+        uni.redirectTo({
+          url: '/pages/index/index'
+        });
+      } catch (error) {
+        if (error.response && error.response.data) {
+          uni.showToast({
+            title: error.response.data.error || '登录失败',
+            icon: 'none'
+          });
+        } else {
+          uni.showToast({
+            title: '登录请求失败，请稍后重试',
+            icon: 'none'
+          });
+        }
       }
     }
   }
 };
 </script>
+
 <style scoped>
 .container {
   display: flex;
