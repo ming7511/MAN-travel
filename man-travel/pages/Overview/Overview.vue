@@ -324,29 +324,32 @@ data() {
 		
     // 点击行程天数按钮后的跳转逻辑
       handleDayClick(day) {
-        const tripId = this.$route.query.id; // 获取当前行程 ID
-        const trip = this.tripsById[tripId]; // 根据 ID 获取行程数据
+          const tripId = this.$route.query.id; // 获取当前行程 ID
+          const trip = this.tripsById[tripId]; // 根据 ID 获取行程数据
       
-        if (day !== '总览') {
-          const selectedTrip = this.dailyTrips.find((trip) => trip.day === day); // 获取对应天的行程数据
-          if (selectedTrip) {
-            let places = selectedTrip.places; // 获取当天行程的地点信息
+          if (day!== '总览') {
+              const selectedTrip = this.dailyTrips.find((trip) => trip.day === day); // 获取对应天的行程数据
+              if (selectedTrip) {
+                  let places = selectedTrip.places; // 获取当天行程的地点信息
       
-            // 确保 places 是数组，如果 places 是字符串，使用 split() 转换为数组
-            const placesArray = Array.isArray(places) ? places : places.split(' - ');
+                  // 确保 places 是数组，如果 places 是字符串，使用 split() 转换为数组
+                  const placesArray = Array.isArray(places)? places : places.split(' - ');
       
-            // 对 places 参数进行 URL 编码，确保传递过程中不受特殊字符影响
-            const placesEncoded = encodeURIComponent(placesArray.join(' - '));
+                  // 对 places 参数进行 URL 编码，确保传递过程中不受特殊字符影响
+                  const placesEncoded = encodeURIComponent(placesArray.join(' - '));
       
-            // 使用 uni.navigateTo 跳转到 DayDetail 页面，传递 day, places, tripTitle, travelDateRange 和 duration 参数
-            uni.navigateTo({
-              url: `/pages/DayDetail/DayDetail?day=${day}&id=${tripId}&places=${placesEncoded}&title=${encodeURIComponent(trip.title)}&dateRange=${encodeURIComponent(trip.dateRange)}&duration=${encodeURIComponent(trip.duration)}`
-            });
+                  // 新增：将整个 trip 对象（包含所有行程相关数据）进行编码传递，这里假设对象转字符串后传递没问题，实际可能需要更严谨的序列化和反序列化处理
+                  const tripEncoded = encodeURIComponent(JSON.stringify(trip)); 
+      
+                  // 使用 uni.navigateTo 跳转到 DayDetail 页面，传递更多参数，包括编码后的 trip 数据
+                  uni.navigateTo({
+                      url: `/pages/DayDetail/DayDetail?day=${day}&id=${tripId}&places=${placesEncoded}&title=${encodeURIComponent(trip.title)}&dateRange=${encodeURIComponent(trip.dateRange)}&duration=${encodeURIComponent(trip.duration)}&tripData=${tripEncoded}`
+                  });
+              }
+          } else {
+              // 如果点击的是总览，保持在当前页面并更新视图
+              this.setCurrentDay(day);
           }
-        } else {
-          // 如果点击的是总览，保持在当前页面并更新视图
-          this.setCurrentDay(day);
-        }
       },
 	  
 	  // 点击“旅行账单”按钮的跳转逻辑
@@ -533,6 +536,7 @@ data() {
 	.overview-title {
       font-size: 18px;
       font-weight: bold;
+	  margin-top: 25px;
       margin-bottom: 10px;
     }
 
