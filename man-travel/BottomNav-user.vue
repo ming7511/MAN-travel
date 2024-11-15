@@ -45,7 +45,7 @@ const addNewTrip = () => {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 70px; /* 增加高度以更显著地显示中间的按钮 */
+  height: 75px; /* 增加高度以更显著地显示中间的按钮 */
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -59,7 +59,7 @@ const addNewTrip = () => {
   align-items: center;
   color: #999;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .icon {
@@ -71,6 +71,7 @@ const addNewTrip = () => {
 .add-trip {
   width: 80px;
   height: 80px;
+  position: relative; 
   background-color: #333; /* 中央按钮的背景色为深色 */
   color: #ffffff;
   border-radius: 50%;
@@ -80,12 +81,17 @@ const addNewTrip = () => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   margin-top: -30px; /* 使按钮浮出部分高度，增强视觉效果 */
   cursor: pointer;
+  margin-left: -10px;
+  margin-right: 0px;
 }
 
 .add-icon {
-  color: #ffffff; /* 确保添加图标的颜色为白色，以便和深色背景对比明显 */
-  font-size: 48px; /* 更大的字体使加号更显眼和规整 */
-  line-height: 1; /* 确保加号在按钮中完全居中 */
-  font-weight: bold; /* 使用较粗的字体以使加号更加显眼 */
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 使加号在中央 */
+  color: #ffffff;
+  font-size: 48px;
+  font-weight: bold;
 }
 </style>
