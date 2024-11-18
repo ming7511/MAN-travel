@@ -1,34 +1,26 @@
 {
-  "hash": "dabef2b0",
-  "configHash": "9efacf8d",
-  "lockfileHash": "221bcc88",
-<<<<<<< HEAD
-  "browserHash": "a9e75eed",
-=======
-  "browserHash": "6ac732b4",
->>>>>>> 91bfe3b9b4a9e9ecb1198d0066c8fe12e0e06858
+  "hash": "1d540abd",
+  "configHash": "1f85b1ef",
+  "lockfileHash": "983f981f",
+  "browserHash": "31370672",
   "optimized": {
-    "@amap/amap-jsapi-loader": {
-      "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
-      "file": "@amap_amap-jsapi-loader.js",
-<<<<<<< HEAD
-      "fileHash": "8daeb446",
-=======
-      "fileHash": "fb8116b8",
->>>>>>> 91bfe3b9b4a9e9ecb1198d0066c8fe12e0e06858
-      "needsInterop": true
+    "axios": {
+      "src": "../../../../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "463cca31",
+      "needsInterop": false
     },
     "uuid": {
       "src": "../../../../../pages/node_modules/uuid/dist/esm-browser/index.js",
       "file": "uuid.js",
-      "fileHash": "c68ca13b",
+      "fileHash": "737e3143",
       "needsInterop": false
     },
-    "axios": {
-      "src": "../../../../../pages/node_modules/axios/index.js",
-      "file": "axios.js",
-      "fileHash": "dc53c70e",
-      "needsInterop": false
+    "@amap/amap-jsapi-loader": {
+      "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
+      "file": "@amap_amap-jsapi-loader.js",
+      "fileHash": "cbbec7b6",
+      "needsInterop": true
     }
   },
   "chunks": {

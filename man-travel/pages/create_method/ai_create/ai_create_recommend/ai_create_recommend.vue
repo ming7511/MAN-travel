@@ -110,9 +110,9 @@ const startPlanning = () => {
   }
 
   // 启动导航到计划页面并传递数据
-  uni.navigateTo({
-    url: `/pages/create_method/ai_create/ai_create_recommend/ai_create_recommend?data=${JSON.stringify(travelData)}`,
-  });
+    uni.navigateTo({
+      url: `/pages/Overview/Overview?id=1`,
+    });
 };
 
 // 初始化地点信息，假设是从上一页传递过来的
