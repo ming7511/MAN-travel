@@ -36,69 +36,6 @@ const closePage = () => {
   uni.navigateBack(); // 返回上一页或关闭页面
 };
 
-// const goToNextPage = () => {
-//   if (locationInput.value.trim() !== '') {
-//     const city = locationInput.value.trim();
-
-//     console.log('这是ai城市');
-
-//     // 从本地存储中获取 access_token
-//     const token = uni.getStorageSync('access_token'); // 确保获取的是 access_token
-
-//     // 打印 token 到控制台
-//     console.log('Access Token:', token); // 使用 access_token 打印
-
-//     if (!token) {
-//       uni.showToast({
-//         title: '请先登录',
-//         icon: 'none'
-//       });
-//       return;
-//     }
-
-//     // 发送POST请求，将城市数据上传到服务器
-//     uni.request({
-//       url: 'https://734dw56037em.vicp.fun/api/trip/AiCreateUrls/', // 替换为实际的后端接口 URL
-//       method: 'POST',
-//       data: { city },
-//       header: {
-//         'Content-Type': 'application/json', // 请求头
-//         'Authorization': `Bearer ${token}`, // 将 token 放入 Authorization 头中
-//       },
-//       success: (res) => {
-//         if (res.statusCode === 200) {
-//           // 存储用户输入的城市
-//           uni.setStorageSync('selectedCity', city);
-
-//           // 跳转到下一个页面
-//           uni.navigateTo({
-//             url: '/pages/create_method/ai_create/ai_create' // 根据实际页面路径修改
-//           });
-//         } else {
-//           // 如果服务器响应状态不是200，可以在这里处理错误
-//           uni.showToast({
-//             title: '城市上传失败，请稍后再试',
-//             icon: 'none'
-//           });
-//         }
-//       },
-//       fail: (err) => {
-//         // 请求失败处理
-//         uni.showToast({
-//           title: '网络请求失败，请检查网络连接',
-//           icon: 'none'
-//         });
-//       }
-//     });
-//   } else {
-//     // 提示用户输入城市
-//     uni.showToast({
-//       title: '请输入城市',
-//       icon: 'none'
-//     });
-//   }
-// };
-
 const goToNextPage = () => {
   if (locationInput.value.trim() !== '') {
     const city = locationInput.value.trim();
@@ -122,9 +59,46 @@ const goToNextPage = () => {
     // 存储用户输入的城市
     uni.setStorageSync('selectedCity', city);
 
-    // 跳转到下一个页面
+    // 在发起请求之前先跳转到下一个页面
     uni.navigateTo({
-      url: '/pages/create_method/ai_create/ai_create_time' // 根据实际页面路径修改
+      url: `/pages/create_method/ai_create/ai_create_time`, // 不需要传递数据
+    });
+
+    // 构建 GET 请求的 URL，传递城市参数
+    const url = `https://734dw56037em.vicp.fun/api/trip/RecommendHotSpots/?city=${encodeURIComponent(city)}`;
+
+    // 发送GET请求，将城市数据上传到服务器
+    uni.request({
+      url: url, // 将城市参数直接附加到 URL 中
+      method: 'GET',
+      header: {
+        'Content-Type': 'application/json', // 请求头
+        'Authorization': `Bearer ${token}`, // 将 token 放入 Authorization 头中
+      },
+      success: (res) => {
+        console.log('服务器返回的数据:', res); // 打印完整的返回内容
+
+        if (res.statusCode === 200) {
+          // 假设返回的数据是一个数组，包含景点信息
+          const popularLocationsData = res.data; // 获取热门景点数据
+
+          // 将返回的热门景点数据存储到缓存中
+          uni.setStorageSync('popularLocations', JSON.stringify(popularLocationsData));
+        } else {
+          // 如果服务器响应状态不是200，可以在这里处理错误
+          uni.showToast({
+            title: '城市上传失败，请稍后再试',
+            icon: 'none'
+          });
+        }
+      },
+      fail: (err) => {
+        // 请求失败处理
+        uni.showToast({
+          title: '网络请求失败，请检查网络连接',
+          icon: 'none'
+        });
+      }
     });
   } else {
     // 提示用户输入城市

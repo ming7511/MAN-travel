@@ -22,7 +22,7 @@
       </view>
       
       <!-- 确认按钮 -->
-      <view class="confirm-box" @click="handleConfirm">
+      <view class="confirm-box" @click="handleConfirm" :disabled="isLoading">
         <image src="/static/icons/link_white.png" class="icon" mode="aspectFit"></image>
         <text class="confirm-text">粘贴并识别</text>
       </view>
@@ -31,11 +31,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, toRaw } from 'vue';
 
 // 定义变量接收旅行数据
 const inputText = ref('');
-const travelData = ref(null); // 用于存储传递过来的旅行数据
+const travelData = ref({});
+const isLoading = ref(false);  // 标志位，用于判断是否处于加载状态
+
+const startY = ref(0);
+const isSliding = ref(false);
 
 // 触摸事件处理
 const handleTouchStart = (e) => {
@@ -85,35 +89,135 @@ const handleConfirm = () => {
     return;
   }
 
-  // 直接跳转到 import 页面进行用例测试
+  // 如果获取到旅行数据，准备上传
+  const { city, startDate, endDate, dayCount } = travelData.value || {};
+
+  // 获取本地存储中的 access_token
+  const token = uni.getStorageSync('access_token');
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+    });
+    return;
+  }
+
+  // 禁用按钮，避免多次点击
+  isLoading.value = true;
+
+  // 跳转至 loading 页面
   uni.navigateTo({
-    url: '/pages/create_method/import/import'  // 修改为正确的跳转路径
+    url: '/pages/loading/loading', // 跳转到 loading 页面
+  });
+
+  // 格式化日期为 YYYY-MM-DD
+  const formatDate = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // 保证两位数
+    const day = String(d.getDate()).padStart(2, '0'); // 保证两位数
+    return `${year}-${month}-${day}`;
+  };
+
+  // 格式化 startDate 和 endDate
+  const formattedStartDate = formatDate(startDate);
+  const formattedEndDate = formatDate(endDate);
+
+  // 打印准备上传的数据
+  const dataToUpload = {
+    url: link,                   // 用户提供的链接
+    trip_name: city,             // 用户提供的目的地
+    start_date: formattedStartDate,  // 格式化后的开始日期
+    end_date: formattedEndDate   // 格式化后的结束日期
+  };
+  
+  console.log('准备上传的数据:', dataToUpload);
+
+  // 发送 POST 请求，将城市和日期等数据上传到服务器
+  uni.request({
+    url: 'https://734dw56037em.vicp.fun/api/trip/AiCreateUrls/', // 替换为实际的后端接口 URL
+    method: 'POST',
+    data: dataToUpload, // 上传的数据
+    header: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`, // 将 token 放入 Authorization 头中
+    },
+    success: (res) => {
+      console.log('服务器响应:', res);  // 打印完整的响应数据
+      if (res.statusCode === 201) {
+        // 如果响应状态码是201，跳转至 import.vue
+        uni.showToast({
+          title: '数据上传成功',
+          icon: 'success',
+        });
+        uni.navigateTo({
+          url: '/pages/create_method/import/import' // 跳转到 import 页面
+        });
+      } else {
+        // 如果服务器返回的是非成功状态码
+        uni.showToast({
+          title: '数据上传失败，请稍后再试',
+          icon: 'none',
+        });
+      }
+    },
+
+    fail: (err) => {
+      // 请求失败处理
+      uni.showToast({
+        title: '网络请求失败，请检查网络连接',
+        icon: 'none',
+      });
+    },
+    complete: () => {
+      // 请求完成后，重置加载状态
+      isLoading.value = false;
+    },
   });
 };
 
-// 在页面加载时获取传递的数据
 onMounted(() => {
-  // 使用 uni.getLaunchOptionsSync 获取页面启动时的参数
   const options = uni.getLaunchOptionsSync();
-  console.log('页面启动参数:', options); // 输出参数调试
+  console.log('页面启动参数:', options);  // 输出启动时的参数，检查 `options.query` 是否存在 `data`。
 
-  const data = options.query.data;  // 获取 URL 查询参数中的 "data"
-  console.log('URL参数 data:', data);
+  if (options.query && options.query.data) {
+    const data = options.query.data;  // 获取 URL 查询参数中的 "data"
+    console.log('URL参数 data:', data);  // 调试：输出 URL 中的参数 data
 
-  if (data) {
-    // 将字符串转换为对象
     try {
-      travelData.value = JSON.parse(decodeURIComponent(data)); // 解码并解析
-      console.log('接收到的旅行数据:', travelData.value); // 输出接收到的数据
+      const decodedData = decodeURIComponent(data);  // 解码
+      console.log('解码后的数据:', decodedData);  // 调试：输出解码后的数据
+
+      try {
+        let parsedData = JSON.parse(decodedData); // 解析 JSON
+        console.log('解析后的数据:', parsedData);  // 调试：输出解析后的数据
+
+        // 确保日期转换正常
+        if (parsedData.startDate) {
+          parsedData.startDate = new Date(parsedData.startDate);
+        }
+        if (parsedData.endDate) {
+          parsedData.endDate = new Date(parsedData.endDate);
+        }
+
+        // 将解析的数据存储到 `travelData` 中
+        travelData.value = parsedData;
+
+        // 输出解开的数据
+        console.log('接收到的旅行数据:', toRaw(travelData.value)); // 使用 toRaw() 获取实际的对象
+      } catch (error) {
+        console.error('解析失败:', error); // 如果解析失败，输出错误信息
+      }
     } catch (error) {
-      console.error('数据解析失败:', error); // 处理数据解析错误
+      console.error('解码失败:', error); // 处理解码失败的情况
     }
   } else {
     console.log('没有接收到旅行数据');
   }
 });
-</script>
 
+</script>
 
 
 

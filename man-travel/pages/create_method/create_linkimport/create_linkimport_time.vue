@@ -241,15 +241,18 @@ const startPlanning = () => {
   // 输出所有选择的信息（城市、日期、天数等）
   console.log('完整的旅行数据:', travelData);
 
-  // 启动导航到目标页面并传递数据
+  // 将旅行数据转换为 JSON 字符串，并进行 URL 编码
   const travelDataStr = JSON.stringify(travelData);
   const encodedData = encodeURIComponent(travelDataStr); // 确保数据编码
+
   console.log('跳转的 URL:', `/pages/create_method/create_linkimport/create_linkimport?data=${encodedData}`);
 
+  // 启动导航到目标页面并传递数据
   uni.navigateTo({
     url: `/pages/create_method/create_linkimport/create_linkimport?data=${encodedData}`,
   });
 };
+
 
 
 // 切换选择 "天数" 或 "日期"
@@ -266,8 +269,6 @@ const toggleSelection = (type) => {
     showDatePicker.value = true;
   }
 };
-
-
 
 // 初始化地点信息，假设是从上一页传递过来的
 onMounted(() => {
