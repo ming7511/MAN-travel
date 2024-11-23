@@ -1,0 +1,46 @@
+表trip information（用于存储行程信息）:
+trip_name:想去的地方（用户输入）
+user id：用户id
+start date：开始日期（用户输入）
+end date ：结束日期（用户输入）
+
+表trip plan（用于存储行程内容）：
+trip information id：行程id
+days：行程第几天
+trip description：目的地
+trip order：顺序，即这一天第几个游玩的目的地
+description:目的地简介（ai生成）
+
+
+
+1、ai根据关键词创建行程
+  ai根据用户给的链接生成行程
+2、用户自定义行程
+3、对于行程单增删改查
+4、行程表和用户表 /
+5、查天气 存数据库
+6、搜周边
+
+from third_service.kimi_api import multi_turn_chat
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+
+
+@csrf_exempt  # 禁用 CSRF 验证，适用于 POST 请求
+def kimi_chat_view(request):
+    if request.method == "POST":
+        # 获取用户传入的 URL，如果没有传入则返回错误信息
+        query_url = request.POST.get("url")
+        if not query_url:
+            return JsonResponse({"error": "URL 参数是必需的"}, status=400)
+        # 调用 multi_turn_chat 函数，传入用户提供的 URL
+        response, history = multi_turn_chat(query_url)
+        # 返回响应结果
+        return HttpResponse(response, content_type="text/plain")
+    else:
+        return JsonResponse({"error": "仅支持 POST 请求"}, status=405)
+
+
+备注：
+1、出错重传功能，ai有时返回的结果有问题，需要出错重传
