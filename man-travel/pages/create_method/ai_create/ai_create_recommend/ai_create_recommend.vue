@@ -69,9 +69,49 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 
-// 从缓存中获取用户选择的城市
 const locationInput = ref('');
+const startDate = ref('');
+const endDate = ref('');
+const dayCount = ref(0);
+
+onLoad((options) => {
+  if (options.data) {
+    // 解码并解析接收到的数据
+    const decodedData = decodeURIComponent(options.data);
+    const travelData = JSON.parse(decodedData);
+
+    // 将数据赋值给相应的变量
+    locationInput.value = travelData.city || '';
+
+    // 解析并格式化日期为 'YYYY-MM-DD'
+    if (travelData.startDate) {
+      const startDateObj = new Date(travelData.startDate);
+      startDate.value = startDateObj.toISOString().split('T')[0]; // 提取日期部分
+    } else {
+      startDate.value = '';
+    }
+
+    if (travelData.endDate) {
+      const endDateObj = new Date(travelData.endDate);
+      endDate.value = endDateObj.toISOString().split('T')[0]; // 提取日期部分
+    } else {
+      endDate.value = '';
+    }
+
+    dayCount.value = travelData.dayCount || 0;
+
+    // 打印接收到的旅行数据
+    console.log('接收到的旅行数据:', travelData);
+  } else {
+    console.error('未接收到旅行数据');
+    uni.showToast({
+      title: '未收到旅行数据，请返回重新选择',
+      icon: 'none',
+    });
+  }
+});
 
 // 旅行关键词词库
 const keywordPool = [
@@ -165,30 +205,116 @@ const selectKeyword = (keyword) => {
   }
 };
 
+const isLoading = ref(false); // 添加加载状态
+
 const startPlanning = () => {
-  // 获取当前日期
-  const startDate = '2024-11-25'; // 示例开始日期
-  const endDate = '2024-12-02'; // 示例结束日期
+  // 检查是否正在加载，避免重复提交
+  if (isLoading.value) {
+    return;
+  }
 
-  // 获取已选择的关键词
-  const selectedKeywordsList = selectedKeywords.value;
+  // 获取本地存储中的 access_token
+  const token = uni.getStorageSync('access_token');
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+    });
+    return;
+  }
 
-  // 获取 isSelected 为 true 的景点
-  const selectedLocations = popularLocations.value.filter(location => location.isSelected);
+  // 获取已选择的关键词，并用逗号隔开
+  const selectedKeywordsList = selectedKeywords.value.join('，');
 
-  // 生成用户行程
+  // 获取已选择的景点名称，并用逗号隔开
+  const selectedLocationNames = popularLocations.value
+    .filter(location => location.isSelected)
+    .map(location => location.name)
+    .join('，');
+
+  // 使用接收到的开始和结束日期
+  const travelDates = { startDate: startDate.value, endDate: endDate.value };
+
+  // 生成用户行程数据
   const userItinerary = {
     location: locationInput.value,
-    travelDates: { startDate, endDate },
-    keywords: selectedKeywordsList,
-    selectedLocations: selectedLocations,
+    travelDates: travelDates,
+    dayCount: dayCount.value,
+    keywords: selectedKeywordsList, // 字符串形式的关键词
+    selectedLocations: selectedLocationNames, // 字符串形式的景点名称
   };
 
-  // 打印完整的用户行程数据，格式化为JSON字符串
+  // 打印完整的用户行程数据
   console.log('用户行程:', JSON.stringify(userItinerary, null, 2));
-};
 
+  // 禁用按钮，避免多次点击
+  isLoading.value = true;
+
+  // 跳转至 loading 页面
+  uni.navigateTo({
+    url: '/pages/loading/loading', // 跳转到 loading 页面
+  });
+
+  // 准备上传的数据
+  const dataToUpload = {
+    trip_name: userItinerary.location,                // 地点
+    start_date: userItinerary.travelDates.startDate,  // 开始日期
+    end_date: userItinerary.travelDates.endDate,      // 结束日期
+    day_counts: userItinerary.dayCount,               // 天数
+    style: userItinerary.keywords,                    // 关键词字符串
+    attractions: userItinerary.selectedLocations,     // 景点名称字符串
+  };
+
+  // 打印准备上传的数据
+  console.log('准备上传的数据:', JSON.stringify(dataToUpload, null, 2));
+
+  // 发送 POST 请求，将行程数据上传到服务器
+  uni.request({
+    url: 'https://734dw56037em.vicp.fun/api/trip/AiCreateStyles/', // 替换为实际的后端接口 URL
+    method: 'POST',
+    data: dataToUpload,
+    header: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    success: (res) => {
+      console.log('服务器响应:', res);
+      if (res.statusCode === 201) {
+        // 如果响应状态码是201，表示创建成功
+        uni.showToast({
+          title: '行程创建成功',
+          icon: 'success',
+        });
+        // 跳转到 import 页面
+        uni.navigateTo({
+          url: '/pages/Overview/Overview' // 跳转到 import 页面
+        });
+      } else {
+        // 如果服务器返回的是非成功状态码
+        uni.showToast({
+          title: res.data.detail || '行程创建失败，请稍后再试',
+          icon: 'none',
+        });
+      }
+    },
+    fail: (err) => {
+      // 请求失败处理
+      console.error('请求失败:', err);
+      uni.showToast({
+        title: '网络请求失败，请检查网络连接',
+        icon: 'none',
+      });
+    },
+    complete: () => {
+      // 请求完成后，重置加载状态
+      isLoading.value = false;
+    },
+  });
+};
 </script>
+
+
+
 <style scoped>
 /* 页面整体布局 */
 .container {

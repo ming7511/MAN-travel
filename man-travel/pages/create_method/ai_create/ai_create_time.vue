@@ -242,14 +242,14 @@ const startPlanning = () => {
   console.log('完整的旅行数据:', travelData);
 
   // 将旅行数据转换为 JSON 字符串，并进行 URL 编码
-  const travelDataStr = JSON.stringify(travelData);
-  const encodedData = encodeURIComponent(travelDataStr); // 确保数据编码
+const travelDataStr = JSON.stringify(travelData);
+const encodedData = encodeURIComponent(travelDataStr);
 
-  console.log('跳转的 URL:', `pages/create_method/ai_create/ai_create_recommend/ai_create_recommend?data=${encodedData}`);
+// 跳转到下一个页面并传递数据
+uni.navigateTo({
+  url: `/pages/create_method/ai_create/ai_create_recommend/ai_create_recommend?data=${encodedData}`,
+});
 
-  uni.navigateTo({
-    url: `/pages/create_method/ai_create/ai_create_recommend/ai_create_recommend?data=${encodedData}`,
-  });
 
 };
 
