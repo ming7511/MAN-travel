@@ -55,7 +55,7 @@ export default {
         { name: "景点", icon: "/static/scenic.png" },
         { name: "购物", icon: "/static/shopping.png" },
         { name: "活动", icon: "/static/activity.png" },
-        { name: "其他", icon: "/static/other.png" }
+        { name: "其他", icon: "/static/others.png" }
       ],
       selectedCategory: null,
       remark: '',       // 存储备注
@@ -67,6 +67,11 @@ export default {
     };
   },
   methods: {
+	jumpToIndex1() {
+	    uni.navigateTo({
+	      url: '/pages/index1/index1'
+	    });
+	  },
     // 选择分类
     selectCategory(index) {
       this.selectedCategory = index;
@@ -110,7 +115,7 @@ export default {
     // 完成提交
     async submit() {
       // 检查必填项
-      if (!this.selectedCategory || !this.date || !this.amount) {
+      if (!(this.selectedCategory+1) || !this.date || !this.amount) {
         uni.showToast({
           title: '请填写所有必填项',
           icon: 'none'
@@ -144,7 +149,7 @@ export default {
           title: response.data.message, // 假设后端返回的数据中有一个 message 字段
           icon: 'success'
         });
-
+         this.jumpToIndex1();
       } catch (error) {
         // 错误处理
         uni.showToast({
@@ -246,7 +251,14 @@ export default {
   width: 100%;
   margin-bottom: 10px;
 }
-
+.date-input {
+  padding: 10px;
+  font-size: 14px;
+  color: #333;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
 .date-button {
   flex: 1;
   padding: 10px;

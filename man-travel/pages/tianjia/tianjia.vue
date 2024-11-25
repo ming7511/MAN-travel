@@ -103,11 +103,19 @@ export default {
       ]
     };
   },
-  computed: {
-    currentCategoryItems() {
-      return this.categories[this.currentCategory].items;
-    }
-  },
+computed: {
+  currentCategoryItems() {
+    const itemsMap = new Map();
+    const uniqueItems = this.categories[this.currentCategory].items.filter(item => {
+      if (!itemsMap.has(item.name)) {
+        itemsMap.set(item.name, item);
+        return true;
+      }
+      return false;
+    });
+    return uniqueItems.values();
+  }
+},
   methods: {
     goBack() {
       uni.navigateBack();
@@ -279,6 +287,7 @@ export default {
 }
 
 /* 保存按钮 */
+/* 保存按钮样式 */
 .save-button {
   width: 100%;
   padding: 12px;
@@ -288,6 +297,10 @@ export default {
   font-weight: bold;
   text-align: center;
   border-radius: 5px;
-  margin-top: 20px;
+  position: fixed; /* 将按钮固定在页面底部 */
+  bottom: 0; /* 紧贴底部 */
+  left: 0; /* 左边界位于页面的最左边 */
+  right: 0; /* 右边界位于页面的最右边，确保宽度为100% */
+  z-index: 100; /* 确保按钮在最上层 */
 }
 </style>
