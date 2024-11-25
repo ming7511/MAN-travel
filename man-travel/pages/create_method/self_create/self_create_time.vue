@@ -80,9 +80,8 @@
       </scroll-view>
     </view>
 
-    <!-- 开始规划按钮 -->
     <view class="start-planning-container">
-      <view class="start-planning-button" @click="startPlanning">
+      <view class="start-planning-button" @click="startPlanning" :class="{'disabled': isUploading}">
         <text class="start-planning-text">开始规划！</text>
       </view>
     </view>
@@ -191,74 +190,151 @@ const closePage = () => {
   uni.navigateBack();
 };
 
-// 开始规划旅行
-const tripsById = ref({});
+const isUploading = ref(false); // 标记上传状态，防止重复点击
 
-// 规划旅行的方法
 const startPlanning = () => {
+  // 如果正在上传数据，则禁止再次点击
+  if (isUploading.value) {
+    return;
+  }
+
+  // 设置为正在上传状态
+  isUploading.value = true;
+
   const travelData = {};
 
-  // 生成唯一的行程 ID
-  const tripId = uuidv4();
-  travelData.tripId = tripId;
-
-  // 设置目的地
-  travelData.location = locationInput.value;
-
-  // 检查用户是否选择了目的地
-  if (!travelData.location || travelData.location === '未选择城市') {
+  // 确保用户选择了旅行的目的地
+  if (!locationInput.value || locationInput.value === '未选择城市') {
     uni.showToast({
       title: '请选择旅行目的地',
       icon: 'none'
     });
-    return;
+    isUploading.value = false; // 上传结束，恢复点击
+    return; // 提示用户选择目的地，并终止函数
   }
 
-  // 如果用户选择了日期，优先使用日期信息
-  if (startDate.value && endDate.value) {
+  // 输出用户选择的城市
+  travelData.city = locationInput.value;
+
+  // 输出选择的天数或日期
+  if (startDate.value) {
+    const dayCount = endDate.value
+      ? (endDate.value - startDate.value) / (1000 * 60 * 60 * 24) + 1 // 计算日期之间的天数
+      : 1;
+
     travelData.startDate = startDate.value;
-    travelData.endDate = endDate.value;
-    travelData.duration = Math.ceil((endDate.value - startDate.value) / (1000 * 3600 * 24)) + 1; // 计算天数，包括起始和终止日期
+    travelData.endDate = endDate.value || startDate.value;
+    travelData.dayCount = dayCount;
+
+    // 输出选择的日期范围和天数
+    console.log('选择的日期和天数: ', {
+      startDate: travelData.startDate,
+      endDate: travelData.endDate,
+      dayCount: travelData.dayCount,
+    });
   } else if (selectedDay.value) {
-    // 否则，使用天数信息
-    travelData.duration = selectedDay.value;
-    travelData.startDate = new Date();
-    travelData.endDate = new Date(new Date().getTime() + (selectedDay.value - 1) * 24 * 60 * 60 * 1000); // 计算结束日期
+    // 如果用户只选择了天数（没有选择日期）
+    travelData.dayCount = selectedDay.value;
+
+    // 输出选择的天数
+    console.log('选择的天数: ', {
+      dayCount: travelData.dayCount,
+    });
   } else {
+    // 如果没有选择天数和日期，则提示用户进行选择
     uni.showToast({
       title: '请选择行程天数或日期',
       icon: 'none'
     });
+    isUploading.value = false; // 上传结束，恢复点击
+    return; // 提示用户选择天数或日期，并终止函数
+  }
+  
+  // 格式化日期为 YYYY-MM-DD
+  const formatDate = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // 保证两位数
+    const day = String(d.getDate()).padStart(2, '0'); // 保证两位数
+    return `${year}-${month}-${day}`;
+  };
+
+  // 输出所有选择的信息（城市、日期、天数等）
+  console.log('完整的旅行数据:', travelData);
+
+  // 将旅行数据转换为 JSON 字符串，并进行 URL 编码
+  const travelDataStr = JSON.stringify({
+    trip_name: travelData.city,  // 行程名称（城市）
+    start_date: formatDate(travelData.startDate),  // 格式化后的开始日期
+    end_date: formatDate(travelData.endDate)  // 格式化后的结束日期
+  });
+
+  const encodedData = encodeURIComponent(travelDataStr); // 确保数据编码
+
+  // 执行上传数据的操作
+  const token = uni.getStorageSync('access_token');
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+    });
+    isUploading.value = false; // 上传结束，恢复点击
     return;
   }
 
-  // 假设可以从其他地方获取地点信息、每日行程和天气数据
-  const places = []; // 旅行地点
-  const dailyTrips = []; // 每日行程
-  const weather = []; // 天气预报
+  // 准备上传的数据
+  const dataToUpload = {
+    trip_name: travelData.city,  // 行程名称（城市）
+    start_date: formatDate(travelData.startDate),  // 格式化后的开始日期
+    end_date: formatDate(travelData.endDate)  // 格式化后的结束日期
+  };
+  
+  console.log('准备上传的数据:', dataToUpload);
 
-  // 将这些数据也添加到行程数据中
-  travelData.places = places;
-  travelData.dailyTrips = dailyTrips;
-  travelData.weather = weather;
+  // 发送 POST 请求，将城市和日期等数据上传到服务器
+  uni.request({
+    url: 'https://734dw56037em.vicp.fun/api/trip/create_trip/', // 替换为实际的后端接口 URL 
+    method: 'POST',
+    data: dataToUpload, // 上传的数据
+    header: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`, // 将 token 放入 Authorization 头中
+    },
+    success: (res) => {
+      console.log('服务器响应:', res);  // 打印完整的响应数据
+      if (res.statusCode === 201) {
+        // 如果响应状态码是201，跳转至 overview 页面
+        uni.showToast({
+          title: '数据上传成功',
+          icon: 'success',
+        });
+        uni.navigateTo({
+          url: '/pages/Overview/Overview'  
+        });
+      } else {
+        // 如果服务器返回的是非成功状态码
+        uni.showToast({
+          title: '数据上传失败，请稍后再试',
+          icon: 'none',
+        });
+      }
+    },
 
-  // 将行程存储到 tripsById
-  tripsById.value[tripId] = travelData;
-
-  // 输出行程信息到控制台
-  console.log('创建行程成功：', {
-    tripId: travelData.tripId,
-    location: travelData.location,
-    startDate: travelData.startDate.toLocaleDateString(),
-    endDate: travelData.endDate.toLocaleDateString(),
-    duration: `${travelData.duration} 天`,
-  });
-
-  // 跳转到行程初始化页面，并通过 URL 参数传递数据
-  uni.navigateTo({
-    url: `/pages/init/init?tripId=${tripId}&location=${encodeURIComponent(travelData.location)}&startDate=${travelData.startDate.toISOString()}&endDate=${travelData.endDate.toISOString()}&duration=${travelData.duration}&places=${encodeURIComponent(JSON.stringify(places))}&dailyTrips=${encodeURIComponent(JSON.stringify(dailyTrips))}&weather=${encodeURIComponent(JSON.stringify(weather))}`
+    fail: (err) => {
+      // 请求失败处理
+      uni.showToast({
+        title: '网络请求失败，请检查网络连接',
+        icon: 'none',
+      });
+    },
+    complete: () => {
+      // 上传完成后，重置上传状态
+      isUploading.value = false;
+    },
   });
 };
+
 
 // 切换选择天数或日期
 const toggleSelection = (selection) => {
@@ -537,6 +613,12 @@ onMounted(() => {
   letter-spacing: 2rpx; /* 设定字间距 */
 }
 
+.start-planning-button.disabled {
+  background-color: #ccc; /* 禁用时的背景颜色 */
+  cursor: not-allowed; /* 禁用时的光标样式 */
+}
+ 
+  
 /* 加载自定义字体 */
 @font-face {
   font-family: 'TaipeiSansTCBeta';

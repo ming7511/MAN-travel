@@ -202,8 +202,10 @@ const startPlanning = () => {
     });
     return; // 提示用户选择目的地，并终止函数
   }
+  // 输出用户选择的城市
+  travelData.city = locationInput.value;
 
-  // 如果用户选择了日期，优先使用日期信息
+  // 输出选择的天数或日期
   if (startDate.value) {
     const dayCount = endDate.value
       ? (endDate.value - startDate.value) / (1000 * 60 * 60 * 24) + 1 // 计算日期之间的天数
@@ -213,7 +215,8 @@ const startPlanning = () => {
     travelData.endDate = endDate.value || startDate.value;
     travelData.dayCount = dayCount;
 
-    console.log('选择了日期: ', {
+    // 输出选择的日期范围和天数
+    console.log('选择的日期和天数: ', {
       startDate: travelData.startDate,
       endDate: travelData.endDate,
       dayCount: travelData.dayCount,
@@ -222,7 +225,8 @@ const startPlanning = () => {
     // 如果用户只选择了天数（没有选择日期）
     travelData.dayCount = selectedDay.value;
 
-    console.log('选择了天数: ', {
+    // 输出选择的天数
+    console.log('选择的天数: ', {
       dayCount: travelData.dayCount,
     });
   } else {
@@ -234,12 +238,20 @@ const startPlanning = () => {
     return; // 提示用户选择天数或日期，并终止函数
   }
 
-  // 启动导航到计划页面并传递数据
-  uni.navigateTo({
-    url: `/pages/create_method/ai_create/ai_create_recommend/ai_create_recommend?data=${JSON.stringify(travelData)}`,
-  });
-};
+  // 输出所有选择的信息（城市、日期、天数等）
+  console.log('完整的旅行数据:', travelData);
 
+  // 将旅行数据转换为 JSON 字符串，并进行 URL 编码
+const travelDataStr = JSON.stringify(travelData);
+const encodedData = encodeURIComponent(travelDataStr);
+
+// 跳转到下一个页面并传递数据
+uni.navigateTo({
+  url: `/pages/create_method/ai_create/ai_create_recommend/ai_create_recommend?data=${encodedData}`,
+});
+
+
+};
 
 // 切换选择 "天数" 或 "日期"
 const toggleSelection = (type) => {
@@ -255,8 +267,6 @@ const toggleSelection = (type) => {
     showDatePicker.value = true;
   }
 };
-
-
 
 // 初始化地点信息，假设是从上一页传递过来的
 onMounted(() => {

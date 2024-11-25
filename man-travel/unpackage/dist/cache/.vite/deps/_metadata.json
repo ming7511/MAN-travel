@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "hash": "5d66d88c",
   "configHash": "9efacf8d",
   "lockfileHash": "af2be956",
@@ -15,12 +16,35 @@
       "file": "@amap_amap-jsapi-loader.js",
       "fileHash": "ab223997",
       "needsInterop": true
+=======
+  "hash": "1d540abd",
+  "configHash": "1f85b1ef",
+  "lockfileHash": "983f981f",
+  "browserHash": "31370672",
+  "optimized": {
+    "axios": {
+      "src": "../../../../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "463cca31",
+      "needsInterop": false
+>>>>>>> 908bfae9ae098fb82feb88bf7485a6f4f1553b7c
     },
     "uuid": {
       "src": "../../../../../pages/node_modules/uuid/dist/esm-browser/index.js",
       "file": "uuid.js",
+<<<<<<< HEAD
       "fileHash": "3121bf62",
       "needsInterop": false
+=======
+      "fileHash": "737e3143",
+      "needsInterop": false
+    },
+    "@amap/amap-jsapi-loader": {
+      "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
+      "file": "@amap_amap-jsapi-loader.js",
+      "fileHash": "cbbec7b6",
+      "needsInterop": true
+>>>>>>> 908bfae9ae098fb82feb88bf7485a6f4f1553b7c
     }
   },
   "chunks": {

@@ -2,9 +2,9 @@ import {
   __commonJS
 } from "./chunk-P2LSHJDD.js";
 
-// ../../../../用户/Documents/HBuilderProjects/软件工程/MAN-travel/man-travel/node_modules/@amap/amap-jsapi-loader/dist/index.js
+// D:/电子垃圾/软件工程/MAN-travel/man-travel/node_modules/@amap/amap-jsapi-loader/dist/index.js
 var require_dist = __commonJS({
-  "../../../../用户/Documents/HBuilderProjects/软件工程/MAN-travel/man-travel/node_modules/@amap/amap-jsapi-loader/dist/index.js"(exports, module) {
+  "D:/电子垃圾/软件工程/MAN-travel/man-travel/node_modules/@amap/amap-jsapi-loader/dist/index.js"(exports, module) {
     (function(m, p) {
       "object" === typeof exports && "undefined" !== typeof module ? module.exports = p() : "function" === typeof define && define.amd ? define(p) : (m = m || self, m.AMapLoader = p());
     })(exports, function() {
