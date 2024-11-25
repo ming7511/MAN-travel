@@ -39,7 +39,6 @@
       <!-- DAY 行程标题 -->
       <view v-if="currentDay!== '总览'" class="day-header">
         <view class="day-label">{{ currentDay }}</view>
-        <view class="add-note" @click="addNote(currentDay)">添加备注</view>
       </view>
       <!-- 行程地点信息 -->
       <view v-if="currentDay!== '总览'" v-for="(place, pIndex) in places" :key="pIndex" class="place-item">
@@ -66,6 +65,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { nextTick } from 'vue';
@@ -245,36 +245,109 @@ export default {
                 const placesList = dailyTrips.value[selectedTripIndex].places.split(' - ');
                 placesList.push(newPlaceName.value);
                 dailyTrips.value[selectedTripIndex].places = placesList.join(' - ');
-                // 主动调用更新地点数据的方法，确保页面能及时显示新添加的地点
-                updatePlacesForDay(day);
-                newPlaceName.value = '';
-                showAddPlaceInput.value = false;
-                // 尝试手动触发更新
-                nextTick(() => {
-                    // 这里可以添加一些调试代码，比如打印相关数据，确认数据是否已按预期修改
-                    console.log('尝试触发更新后，places:', places.value);
-                    console.log('尝试触发更新后，dailyTrips:', dailyTrips.value);
-                });
+                // 构造要发送到后端的请求数据
+                const requestData = {
+                    trip_information_id: 9,  // 使用tripId作为行程ID，需确保tripId正确对应后端所需行程ID
+                    days: 1,  // 从格式化后的天数字符串中提取数字部分作为行程天数
+                    trip_destination: "万达广场",
+                    description: ''  // 这里描述暂时为空，可根据实际需求修改
+                };
+                // 设置请求头
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyMDQ3MDM5NTM4LCJpYXQiOjE3MzE2Nzk1MzgsImp0aSI6ImQ5ODM5NDIxNTgwMTQ2NTQ5Yzk1ZDVmOTQwMTU3NjBkIiwidXNlcl9pZCI6M30.6lJwP0434Dh3KcG2A8SmJ6xAn65azoY6k4NKxaw99vM'  // 这里需替换成实际有效的access_token
+                };
+                // 发送POST请求到后端接口
+                axios.post('https://734dw56037em.vicp.fun/api/trip/add_place_activity/', requestData, { headers })
+                  .then((response) => {
+                        if (response.status === 201) {
+                            console.log(response.data.message);  // 打印后端返回的成功提示信息
+                            // 主动调用更新地点数据的方法，确保页面能及时显示新添加的地点
+                            updatePlacesForDay(day);
+                            newPlaceName.value = '';
+                            showAddPlaceInput.value = false;
+                            // 尝试手动触发更新
+                            nextTick(() => {
+                                // 这里可以添加一些调试代码，比如打印相关数据，确认数据是否已按预期修改
+                                console.log('尝试触发更新后，places:', places.value);
+                                console.log('尝试触发更新后，dailyTrips:', dailyTrips.value);
+                            });
+                        }
+                    })
+                  .catch((error) => {
+                        // 根据不同的错误状态码处理错误情况
+                        if (error.response) {
+                            const statusCode = error.response.status;
+                            if (statusCode === 400) {
+                                console.error('添加地点出错：', error.response.data.error);
+                            } else if (statusCode === 403) {
+                                console.error('无权限添加地点：', error.response.data.error);
+                            } else if (statusCode === 500) {
+                                console.error('后端添加地点出现异常：', error.response.data.error);
+                            }
+                        } else {
+                            console.error('发送添加地点请求出错：', error);
+                        }
+                    });
             } else {
                 console.log('未找到对应天数的行程数据，无法添加地点');
             }
         }
     };
+	
+	const getPlaceId = (place) => {
+	    // 假设地点对象是一个包含id属性的对象，这里将其解析并返回id值，实际情况你可能需要从数据库查询等其他方式获取
+	    return place.id;
+	};
 
     // 删除地点的方法
     const deletePlace = (day, placeIndex) => {
         const formattedDay = day.trim().toUpperCase();
         const selectedTripIndex = dailyTrips.value.findIndex((trip) => trip.day.trim().toUpperCase() === formattedDay);
         if (selectedTripIndex!== -1) {
-            const placesList = dailyTrips.value[selectedTripIndex].places.split(' - ');
-            placesList.splice(placeIndex, 1);
-            dailyTrips.value[selectedTripIndex].places = placesList.join(' - ');
-            updatePlacesForDay(day);
-            // 手动触发更新检查
-            nextTick(() => {
-                console.log('删除地点后，places:', places.value);
-                console.log('删除地点后，dailyTrips:', dailyTrips.value);
-            });
+            const place = dailyTrips.value[selectedTripIndex].places.split(' - ')[placeIndex];
+            // 获取地点对应的ID（这里假设地点对象有个id属性，实际中你需要根据真实的数据结构获取准确的活动/地点ID，比如从地点对象里提取等方式）
+            const placeId = getPlaceId(place);
+            // 构造要发送到后端的请求数据，包含要删除的地点对应的ID
+            const requestData = {
+                "activity_id": 73
+            };
+            // 设置请求头
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyMDQ3MDM5NTM4LCJpYXQiOjE3MzE2Nzk1MzgsImp0aSI6ImQ5ODM5NDIxNTgwMTQ2NTQ5Yzk1ZDVmOTQwMTU3NjBkIiwidXNlcl9pZCI6M30.6lJwP0434Dh3KcG2A8SmJ6xAn65azoY6k4NKxaw99vM'  // 这里需替换成实际有效的access_token
+            };
+            // 发送POST请求到后端接口
+            axios.post('https://734dw56037em.vicp.fun/api/trip/delete_activity/', requestData, { headers })
+            .then((response) => {
+                    if (response.status === 200) {
+                        console.log(response.data.message);  // 打印后端返回的成功提示信息
+                        const placesList = dailyTrips.value[selectedTripIndex].places.split(' - ');
+                        placesList.splice(placeIndex, 1);
+                        dailyTrips.value[selectedTripIndex].places = placesList.join(' - ');
+                        updatePlacesForDay(day);
+                        // 手动触发更新检查
+                        nextTick(() => {
+                            console.log('删除地点后，places:', places.value);
+                            console.log('删除地点后，dailyTrips:', dailyTrips.value);
+                        });
+                    }
+                })
+            .catch((error) => {
+                    // 根据不同的错误状态码处理错误情况
+                    if (error.response) {
+                        const statusCode = error.response.status;
+                        if (statusCode === 400) {
+                            console.error('删除地点出错：', error.response.data.error);
+                        } else if (statusCode === 404) {
+                            console.error('要删除的地点不存在：', error.response.data.error);
+                        } else if (statusCode === 500) {
+                            console.error('后端删除地点出现异常：', error.response.data.error);
+                        }
+                    } else {
+                        console.error('发送删除地点请求出错：', error);
+                    }
+                });
         } else {
             console.log('未找到对应天数的行程数据，无法删除地点');
         }

@@ -1,33 +1,25 @@
 {
-  "hash": "dabef2b0",
+  "hash": "5d66d88c",
   "configHash": "9efacf8d",
-  "lockfileHash": "221bcc88",
-<<<<<<< HEAD
-  "browserHash": "a9e75eed",
-=======
-  "browserHash": "6ac732b4",
->>>>>>> 91bfe3b9b4a9e9ecb1198d0066c8fe12e0e06858
+  "lockfileHash": "af2be956",
+  "browserHash": "9cd51a66",
   "optimized": {
+    "axios": {
+      "src": "../../../../../pages/node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "18968e0b",
+      "needsInterop": false
+    },
     "@amap/amap-jsapi-loader": {
       "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
       "file": "@amap_amap-jsapi-loader.js",
-<<<<<<< HEAD
-      "fileHash": "8daeb446",
-=======
-      "fileHash": "fb8116b8",
->>>>>>> 91bfe3b9b4a9e9ecb1198d0066c8fe12e0e06858
+      "fileHash": "ab223997",
       "needsInterop": true
     },
     "uuid": {
       "src": "../../../../../pages/node_modules/uuid/dist/esm-browser/index.js",
       "file": "uuid.js",
-      "fileHash": "c68ca13b",
-      "needsInterop": false
-    },
-    "axios": {
-      "src": "../../../../../pages/node_modules/axios/index.js",
-      "file": "axios.js",
-      "fileHash": "dc53c70e",
+      "fileHash": "3121bf62",
       "needsInterop": false
     }
   },
