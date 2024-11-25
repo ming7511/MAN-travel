@@ -15,23 +15,29 @@
     <view class="category-section">
       <text class="section-title">常用物品</text>
       <view class="category-tabs">
-        <view class="tab active">个人证件</view>
-        <view class="tab">数码产品</view>
-        <view class="tab">药品</view>
-        <view class="tab">生活用品</view>
+        <view 
+          class="tab" 
+          v-for="(category, index) in categories" 
+          :key="index" 
+          :class="{ active: currentCategory === index }" 
+          @click="selectCategory(index)"
+        >
+          {{ category.title }}
+        </view>
       </view>
     </view>
 
     <!-- 物品列表 -->
     <view class="item-list">
-      <view class="item" v-for="item in items" :key="item.id">
+      <view class="item" v-for="item in currentCategoryItems" :key="item.id">
         <text>{{ item.name }}</text>
-        <view class="add-icon">＋</view>
+        <view class="add-icon" v-if="item.showAddIcon" @click="addItem(item)">＋</view>
+        <view v-if="item.completed">已添加</view>
       </view>
     </view>
 
     <!-- 保存按钮 -->
-    <button class="save-button">保存</button>
+   <button class="save-button" @click="saveAndNavigate">保存</button>
   </view>
 </template>
 
@@ -39,22 +45,120 @@
 export default {
   data() {
     return {
-      items: [
-        { id: 1, name: '身份证' },
-        { id: 2, name: '学生证' },
-        { id: 3, name: '户口本' },
-        { id: 4, name: '护照' },
-        { id: 5, name: '签证' },
-        { id: 6, name: '港澳通行证' },
-        { id: 7, name: '大陆居民往来通行证' },
-        { id: 8, name: '驾照' }
+      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyMDQ3NjQ5MDI0LCJpYXQiOjE3MzIyODkwMjQsImp0aSI6ImJkYmYzMWRlMTAwNTQ4ZTE5ZmI4NWQ5MDhjMGUzODZhIiwidXNlcl9pZCI6M30.JgXdiNcV3wVC73KWKORyOERdyeElEIm4ER5uWuNU3B0',
+      currentCategory: 0,
+    categories: [
+        {
+          title: '个人证件',
+          items: [
+            { id: 1, name: '身份证', completed: false, showAddIcon: true },
+            { id: 2, name: '学生证', completed: false, showAddIcon: true },
+            { id: 3, name: '户口本', completed: false, showAddIcon: true },
+            { id: 4, name: '护照', completed: false, showAddIcon: true },
+            { id: 5, name: '签证', completed: false, showAddIcon: true },
+            { id: 6, name: '港澳通行证', completed: false, showAddIcon: true },
+            { id: 7, name: '大陆居民往来通行证', completed: false, showAddIcon: true },
+            { id: 8, name: '驾照', completed: false, showAddIcon: true }
+          ]
+        },
+        {
+          title: '数码产品',
+          items: [
+            { id: 9, name: '手机', completed: false, showAddIcon: true },
+            { id: 10, name: '充电器', completed: false, showAddIcon: true },
+            { id: 11, name: '耳机', completed: false, showAddIcon: true },
+            { id: 12, name: '相机', completed: false, showAddIcon: true },
+            { id: 13, name: '笔记本电脑', completed: false, showAddIcon: true },
+            { id: 14, name: '平板电脑', completed: false, showAddIcon: true },
+            { id: 15, name: '智能手表', completed: false, showAddIcon: true },
+            { id: 16, name: '存储卡', completed: false, showAddIcon: true }
+          ]
+        },
+        {
+          title: '药品',
+          items: [
+            { id: 17, name: '感冒药', completed: false, showAddIcon: true },
+            { id: 18, name: '创可贴', completed: false, showAddIcon: true },
+            { id: 19, name: '止痛药', completed: false, showAddIcon: true },
+            { id: 20, name: '消炎药', completed: false, showAddIcon: true },
+            { id: 21, name: '晕车药', completed: false, showAddIcon: true },
+            { id: 22, name: '防晒霜', completed: false, showAddIcon: true },
+            { id: 23, name: '防蚊液', completed: false, showAddIcon: true },
+            { id: 24, name: '维生素', completed: false, showAddIcon: true }
+          ]
+        },
+        {
+          title: '生活用品',
+          items: [
+            { id: 25, name: '牙刷', completed: false, showAddIcon: true },
+            { id: 26, name: '牙膏', completed: false, showAddIcon: true },
+            { id: 27, name: '毛巾', completed: false, showAddIcon: true },
+            { id: 28, name: '洗发水', completed: false, showAddIcon: true },
+            { id: 29, name: '沐浴露', completed: false, showAddIcon: true },
+            { id: 30, name: '洗衣液', completed: false, showAddIcon: true },
+            { id: 31, name: '卫生纸', completed: false, showAddIcon: true },
+            { id: 32, name: '雨伞', completed: false, showAddIcon: true }
+          ]
+        }
       ]
     };
+  },
+  computed: {
+    currentCategoryItems() {
+      return this.categories[this.currentCategory].items;
+    }
   },
   methods: {
     goBack() {
       uni.navigateBack();
-    }
+    },
+    selectCategory(index) {
+      this.currentCategory = index;
+    },
+       addItem(item) {
+          this.$set(item, 'completed', true);
+          this.$set(item, 'showAddIcon', false);
+          this.sendPostRequest(item, this.token); // 调用发送 POST 请求的方法
+        },
+     sendPostRequest(item) {
+       // 获取当前分类的 title
+       const currentCategoryTitle = this.categories[this.currentCategory].title;
+       const requestData = {
+         id: item.id,
+         name: item.name,
+         note: currentCategoryTitle, // 使用当前分类的 title 作为 note 的值
+         status: "no", // 默认为 no
+         created_at: new Date().toISOString(), // 当前时间
+         trip_information: null
+       };
+     
+       fetch('http://127.0.0.1:8000/api/memos/memos/',  { // 确保 URL 正确
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json', // 确保这是服务器期望的格式
+           'Authorization': `Bearer ${this.token}` // 使用 this.token 引用组件的 token
+         },
+         body: JSON.stringify(requestData), // 将 JavaScript 对象转换为 JSON 字符串
+       })
+       .then(response => {
+         if (response.ok) {
+           return response.json();
+         }
+         throw new Error('Network response was not ok.');
+       })
+       .then(data => {
+         console.log('Success:', data);
+       })
+       .catch((error) => {
+         console.error('Error:', error);
+       });
+     },
+	saveAndNavigate() {
+	    // 这里可以添加保存物品列表的逻辑，如果需要的话
+	    uni.navigateTo({
+	      url: '/pages/index2/index2' // 确保这是正确的路径
+	    });
+	  }
   }
 };
 </script>

@@ -18,9 +18,9 @@
 
     <!-- 输入区域：日期选择、备注输入 -->
     <view class="input-section">
-      <!-- 日期选择按钮和备注输入框 -->
+      <!-- 日期选择输入框 -->
       <view class="date-remark-container">
-        <view class="date-button" @click="chooseDate">选择日期: {{ date || '未选择' }}</view>
+        <input class="date-input" placeholder="输入日期 YYYY-MM-DD" v-model="date" @input="handleDateInput" />
         <input class="remark-input" placeholder="在这里输入备注..." v-model="remark" />
       </view>
       
@@ -43,6 +43,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
@@ -53,13 +55,15 @@ export default {
         { name: "景点", icon: "/static/scenic.png" },
         { name: "购物", icon: "/static/shopping.png" },
         { name: "活动", icon: "/static/activity.png" },
-        { name: "其它", icon: "/static/other.png" }
+        { name: "其他", icon: "/static/other.png" }
       ],
       selectedCategory: null,
-      date: '',         // 存储选择的日期
       remark: '',       // 存储备注
-      amount: "0.00",   // 存储金额
+      amount: '0.00',    // 存储金额
       keys: ["1", "2", "3", "✖️", "4", "5", "6", "+", "7", "8", "9", "-", ".", "0", "完成"],
+      date: "",          // 存储用户输入的日期
+      showDateInputFlag: false, // 控制日期输入框的显示
+      trip_information: 13
     };
   },
   methods: {
@@ -67,30 +71,10 @@ export default {
     selectCategory(index) {
       this.selectedCategory = index;
     },
-    // 调用日期选择器
-    chooseDate() {
-      uni.showDatePicker({
-        success: (res) => {
-          this.date = res.date;  // 成功选择日期后，将日期存储在 data 中
-        },
-        fail: () => {
-          uni.showToast({
-            title: '未选择日期',
-            icon: 'none'
-          });
-        }
-      });
-    },
     // 处理键盘按键事件
     handleKeyPress(key) {
       if (key === "✖️") {
         this.amount = "0.00";
-      } else if (key === "+") {
-        // 加号逻辑处理
-      } else if (key === "-") {
-        // 减号逻辑处理
-      } else if (key === "=") {
-        // 计算逻辑
       } else if (key === "完成") {
         this.submit();
       } else {
@@ -102,21 +86,77 @@ export default {
         }
       }
     },
+    // 显示日期输入框
+    showDateInput() {
+      this.showDateInputFlag = true; // 控制日期输入框的显示
+    },
+    // 处理日期输入
+    handleDateInput(event) {
+      let value = event.target.value;
+      // 确保日期格式正确
+      if (value.length === 4 && !value.includes('-')) {
+        value += '-';
+      } else if (value.length === 7 && !value.includes('-')) {
+        value = value.slice(0, 4) + '-' + value.slice(4, 7);
+      } else if (value.length === 10 && !value.includes('-')) {
+        value = value.slice(0, 7) + '-' + value.slice(7);
+      }
+      this.date = value;
+    },
     // 返回上一页
     goBack() {
       uni.navigateBack();
     },
     // 完成提交
-    submit() {
-      uni.showToast({
-        title: '账单已添加',
-        icon: 'success'
-      });
+    async submit() {
+      // 检查必填项
+      if (!this.selectedCategory || !this.date || !this.amount) {
+        uni.showToast({
+          title: '请填写所有必填项',
+          icon: 'none'
+        });
+        return;
+      }
+
+      try {
+        // 构造请求体
+        const requestData = {
+          category: this.categories[this.selectedCategory].name,
+          remark: this.remark,
+          date: this.date,
+          amount: parseFloat(this.amount), // 转换为数字
+          trip_information: 1 // 假设 trip_information 是固定值
+        };
+        console.log('Request Data:', requestData);
+        // 设置 headers，包括身份认证信息
+        const config = {
+          headers: {
+            'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyMDQ3NjQ5MDI0LCJpYXQiOjE3MzIyODkwMjQsImp0aSI6ImJkYmYzMWRlMTAwNTQ4ZTE5ZmI4NWQ5MDhjMGUzODZhIiwidXNlcl9pZCI6M30.JgXdiNcV3wVC73KWKORyOERdyeElEIm4ER5uWuNU3B0', // 替换为实际的 Bearer 令牌
+            'Content-Type': 'application/json' // 根据后端要求设置正确的 Content-Type
+          }
+        };
+
+        // 发送 POST 请求到后端
+        const response = await axios.post('http://127.0.0.1:8000/api/bills/expenses/', requestData, config);
+
+        // 处理响应
+        uni.showToast({
+          title: response.data.message, // 假设后端返回的数据中有一个 message 字段
+          icon: 'success'
+        });
+
+      } catch (error) {
+        // 错误处理
+        uni.showToast({
+          title: '请求失败，请稍后再试',
+          icon: 'none'
+        });
+        console.error('请求错误:', error); // 在控制台打印错误信息
+      }
     }
   }
 };
 </script>
-
 <style scoped>
 /* 页面整体样式 */
 .container {
