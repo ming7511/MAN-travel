@@ -15,7 +15,11 @@
     <view class="bill-section">
       <view class="total-amount">
         <text class="total-label">总花费</text>
-        <text class="amount">¥ 888.00</text>
+        <text class="amount">¥ {{ totalAmount }}</text>
+      </view>
+      <view class="budget">
+        <text class="budget-label">预算</text>
+        <text class="amount">¥ {{ budget }}</text>
       </view>
       <view class="set-budget-background"></view>
       <view class="set-budget-text" @click="showBudgetOverlay">
@@ -24,16 +28,21 @@
     </view>
 
     <view class="detail-section">
-      <view class="date-wrapper">
-        <view class="date">
-          <text>2024.10.1</text>
-          <text class="amount">¥ 888.00</text>
+      <!-- 使用 v-for 循环遍历 billRecords 数组 -->
+      <view v-for="(record, index) in billRecords" :key="record.id" class="detail-item">
+        <!-- 日期 -->
+        <view class="date-wrapper">
+          <text class="date">{{ record.date }}</text>
         </view>
-      </view>
-      <view class="item">
-        <image src="/static/ttravel.png" class="icon"></image>
-        <text class="item-title">交通</text>
-        <text class="amount">¥ 888.00</text>
+        <!-- 项目详情 -->
+        <view class="item">
+          <!-- 动态绑定图标的 src 属性 -->
+          <image :src="record.icon" class="icon"></image>
+          <!-- 动态显示项目标题 -->
+          <text class="item-title">{{ record.category }}</text>
+          <!-- 动态显示金额 -->
+          <text class="amount">¥ {{ record.amount }}</text>
+        </view>
       </view>
     </view>
 
@@ -41,27 +50,26 @@
     <view class="budget-input-overlay" v-if="showBudgetInput">
       <view class="budget-input-container">
         <text class="budget-input-title">设置预算</text>
-        <text class="budget-display">¥ {{ budget }}</text>
+        <input class="budget-display" type="text" v-model="budget" />
         <view class="number-keyboard">
-          <view v-for="key in keys" :key="key" class="key" @click="handleKeyClick(key)">
+          <view class="key" v-for="key in keys" :key="key" @click="handleKeyClick(key)">
             {{ key }}
           </view>
         </view>
-        <button class="confirm-button" @click="confirmBudget">完成</button>
+        <button class="confirm-button" @click="confirmBudget">确认</button>
       </view>
-      <!-- 移除 overlay 的 @click 事件 -->
-      <view class="overlay" @click="closeKeyboard"></view>
     </view>
   </view>
 </template>
-
 <script>
 export default {
   data() {
     return {
       showBudgetInput: false, // 控制预算输入框显示
       budget: '', // 存储当前预算输入值
-      keys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'C', '←'] // 数字键盘按键
+      keys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'C', '←'], // 数字键盘按键
+      billRecords: [], // 用于存储从后端获取的账单记录
+      totalAmount: 0, // 总金额，初始化为0
     };
   },
   methods: {
@@ -70,11 +78,9 @@ export default {
         url: '/pages/xingli/xingli'  // 跳转路径
       });
     },
-    // 显示预算输入弹窗
     showBudgetOverlay() {
       this.showBudgetInput = true;
     },
-    // 处理数字键盘按键点击
     handleKeyClick(key) {
       if (key === 'C') {
         this.budget = ''; // 清空输入
@@ -83,28 +89,74 @@ export default {
       } else {
         this.budget += key; // 添加数字
       }
-      console.log("当前预算输入:", this.budget); // 调试输出
     },
-    // 确认预算并关闭输入框
     confirmBudget() {
       this.showBudgetInput = false;
+      // 这里可以添加将预算值保存到数据存储或发送到服务器的代码
       uni.showToast({
         title: `预算已设置为 ¥${this.budget}`,
         icon: 'success',
         duration: 2000
       });
-      console.log("预算设置为:", this.budget); // 调试输出
     },
-    // 关闭键盘
     closeKeyboard() {
       this.showBudgetInput = false;
+    },
+    fetchBillRecords() {
+      const apiUrl = 'http://localhost:8000/api/bills/expenses/'; // 确保这是您的后端API地址
+      
+      uni.request({
+        url: apiUrl,
+        method: 'GET',
+        header: {
+          'Content-Type': 'application/json', // 确保发送正确的Content-Type
+          'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyMDQ3NzIxNTk1LCJpYXQiOjE3MzIzNjE1OTUsImp0aSI6IjZhMDRkYTc4NTlkZjQ2MmI4Y2IzZjYzODZkNjgwYTViIiwidXNlcl9pZCI6NH0.1SVjp969mJARPT89y4EZl2wZltoojtIzaNMD5hhyZ5g' // 替换为您的实际Token
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            this.billRecords = res.data;
+            this.totalAmount = this.billRecords.reduce((total, record) => {
+              return total + parseFloat(record.amount);
+            }, 0).toFixed(2);
+          } else {
+            uni.showToast({
+              title: '获取账单记录失败: ' + res.statusCode,
+              icon: 'none'
+            });
+            console.error('获取账单记录失败，状态码：', res.statusCode);
+          }
+        },
+        fail: (err) => {
+          uni.showToast({
+            title: '网络请求失败',
+            icon: 'none'
+          });
+          console.error('请求失败:', err);
+        }
+      });
     }
-  }
-};
+  },
+  mounted() {
+     this.fetchBillRecords();
+     this.timer = setInterval(() => {
+       this.fetchBillRecords();
+     }, 1000); // 每10秒获取一次数据
+   },
+   beforeDestroy() {
+     if (this.timer) {
+       clearInterval(this.timer);
+     }
+   },
+   computed: {
+     totalAmount() {
+       return this.billRecords.reduce((total, record) => {
+         return total + parseFloat(record.amount);
+       }, 0).toFixed(2); // 使用 toFixed(2) 来格式化为两位小数
+     }
+   }
+   
+ };
 </script>
-
-
-
 <style>
 .budget-input-overlay {
   position: fixed;
