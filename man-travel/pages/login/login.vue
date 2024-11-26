@@ -97,7 +97,7 @@ export default {
 
     // 用户登录
     async login() {
-      if (!this.phoneNumber || !this.verificationCode) {
+      if (!this.phoneNumber ||!this.verificationCode) {
         uni.showToast({
           title: '请输入手机号和验证码',
           icon: 'none'
@@ -114,14 +114,10 @@ export default {
         const { access, refresh } = response.data;
         uni.setStorageSync('access_token', access);
         uni.setStorageSync('refresh_token', refresh);
-<<<<<<< HEAD
-				// 打印 token 到控制台		    console.log('Access Token:', access);		    console.log('Refresh Token:', refresh);
-=======
-		
-		// 打印 token 到控制台
-		    console.log('Access Token:', access);
-		    console.log('Refresh Token:', refresh);
->>>>>>> 908bfae9ae098fb82feb88bf7485a6f4f1553b7c
+
+        // 打印 token 到控制台
+        console.log('Access Token:', access);
+        console.log('Refresh Token:', refresh);
 
         uni.redirectTo({
           url: '/pages/index/index'
@@ -197,7 +193,7 @@ export default {
 }
 
 .verification-button {
-  margin-left: 0px;
+  margin-left: 0;
   color: #3b82f6;
   font-size: 14px;
   border: none;

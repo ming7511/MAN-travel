@@ -121,6 +121,13 @@
 			}
 		},
 		{
+			"path" : "pages/Overview/new_file",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
 			"path" : "pages/Overview/Overview",
 			"style" : 
 			{

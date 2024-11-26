@@ -310,7 +310,7 @@ const startPlanning = () => {
           icon: 'success',
         });
         uni.navigateTo({
-          url: '/pages/Overview/Overview'  
+          url: '/pages/Overview/new_file'  
         });
       } else {
         // 如果服务器返回的是非成功状态码
