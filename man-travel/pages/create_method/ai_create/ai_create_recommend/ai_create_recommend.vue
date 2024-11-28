@@ -155,7 +155,6 @@ onMounted(() => {
           name: location.name,
           type: location.tag, // 如果缓存中的字段是 tag，需要映射到 type
           recommendation: location.description, // 如果缓存中的字段是 description，需要映射到 recommendation
-          thumbnail: location.thumbnail || '/static/images/default.png', // 处理没有 thumbnail 的情况
           isSelected: location.isSelected || false, // 默认值 false
         }));
 
@@ -277,40 +276,46 @@ const startPlanning = () => {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    success: (res) => {
-      console.log('服务器响应:', res);
-      if (res.statusCode === 201) {
-        // 如果响应状态码是201，表示创建成功
-        uni.showToast({
-          title: '行程创建成功',
-          icon: 'success',
-        });
-        // 跳转到 import 页面
-        uni.navigateTo({
-          url: '/pages/Overview/Overview' // 跳转到 import 页面
-        });
-      } else {
-        // 如果服务器返回的是非成功状态码
-        uni.showToast({
-          title: res.data.detail || '行程创建失败，请稍后再试',
-          icon: 'none',
-        });
-      }
-    },
-    fail: (err) => {
-      // 请求失败处理
-      console.error('请求失败:', err);
-      uni.showToast({
-        title: '网络请求失败，请检查网络连接',
-        icon: 'none',
+    // 在成功回调中获取 trip_id 并导航
+        success: (res) => {
+          console.log('服务器响应:', res);
+          if (res.statusCode === 201) {
+            // 假设服务器在响应体中返回了 trip_id
+            const tripId = res.data.trip_id;
+			console.log('trip_id=',tripId);
+            uni.showToast({
+              title: '行程创建成功',
+              icon: 'success',
+            });
+    
+            // 跳转到 Overview 页面，并传递 trip_id 作为参数
+            uni.navigateTo({
+              url: `/pages/Overview/Overview?trip_id=${tripId}` // 传递 trip_id
+            });
+          } else {
+            // 打印详细错误信息
+            console.error('创建行程失败:', res.data);
+            // 显示服务器返回的错误信息
+            uni.showToast({
+              title: res.data.error || res.data.detail || '行程创建失败，请稍后再试',
+              icon: 'none',
+            });
+          }
+        },
+        fail: (err) => {
+          // 请求失败处理
+          console.error('请求失败:', err);
+          uni.showToast({
+            title: '网络请求失败，请检查网络连接',
+            icon: 'none',
+          });
+        },
+        complete: () => {
+          // 请求完成后，重置加载状态
+          isLoading.value = false;
+        },
       });
-    },
-    complete: () => {
-      // 请求完成后，重置加载状态
-      isLoading.value = false;
-    },
-  });
-};
+    };
 </script>
 
 
