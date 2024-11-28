@@ -178,30 +178,28 @@ const handleConfirm = () => {
     success: (res) => {
       console.log('服务器响应:', res); // 打印完整的响应数据
       if (res.statusCode === 201) {
-        // 如果响应状态码是201，跳转至 import.vue
+        // 显示成功提示
         uni.showToast({
           title: '数据上传成功',
           icon: 'success',
         });
-
-        // 提取服务器返回的 title 和 photo
-        const { title, photo, trip_id } = res.data;
-		
-		
-        // 跳转到 import 页面并传递数据
+  
+        // 提取服务器返回的 trip_id
+        const { trip_id } = res.data;
+        
+        // 构建包含 trip_id 的 URL
+        const importPageUrl = `/pages/create_method/import/import?trip_id=${trip_id}`;
+  
+        // 跳转到 import 页面
         uni.navigateTo({
-          url: '/pages/create_method/import/import', // 跳转到 import 页面
-          success: function (navigateRes) {
-            // 通过 eventChannel 向被打开页面传送数据
-            navigateRes.eventChannel.emit('importData', { title, photo, trip_id });
-          },
+          url: importPageUrl, // 包含 trip_id 的 URL
         });
       } else {
-        // 如果服务器返回的是非成功状态码
+        // 服务器返回非成功状态码
         uni.showToast({
           title: '数据上传失败，请稍后再试',
           icon: 'none',
-        });	
+        });
       }
     },
     fail: (err) => {
@@ -212,12 +210,13 @@ const handleConfirm = () => {
       });
     },
     complete: () => {
-      // 请求完成后，重置加载状态
-      isLoading.value = false;
+      // 请求完成后，重置加载状态（如果有定义 isLoading）
+      if (typeof isLoading !== 'undefined') {
+        isLoading.value = false;
+      }
     },
   });
 };
-
 
 // 使用 onLoad 生命周期获取页面参数
 onLoad((options) => {

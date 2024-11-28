@@ -88,7 +88,7 @@
                   {{ location.type }}
                 </text>
                 <text class="location-separator"> | </text>
-                <text class="location-address">{{ location.address }}</text>
+                <text class="location-description">{{ location.description }}</text>
               </view>
             </view>
             <!-- 选择框 -->
@@ -118,7 +118,7 @@
                 {{ location.type }}
               </text>
               <text class="location-separator"> | </text>
-              <text class="location-address">{{ location.address }}</text>
+              <text class="location-description">{{ location.description }}</text>
             </view>
           </view>
           <view class="select-icon-container" @click="toggleSelection(selectedDay - 1, index)">
@@ -142,7 +142,7 @@
                 {{ location.type }}
               </text>
               <text class="location-separator"> | </text>
-              <text class="location-address">{{ location.address }}</text>
+              <text class="location-description">{{ location.description }}</text>
             </view>
           </view>
           <!-- 选择框 -->
@@ -158,9 +158,10 @@
   </view>
 
   <!-- 行程确认框 -->
-  <view v-if="showItineraryConfirm" class="confirm-box black-confirm">
+  <view v-if="showItineraryConfirm" class="confirm-box black-confirm" @click="createNewTrip">
     <text class="confirm-text white-text">创建为新的行程</text>
   </view>
+
 
   <!-- 地点确认框 -->
   <view v-if="showLocationConfirm" class="confirm-box white-confirm">
@@ -169,14 +170,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from 'vue';
+import { ref, onMounted, toRaw } from 'vue';
+import { useRoute } from 'vue-router'; // 导入 useRoute 以获取路由信息
 
 // 数据和变量
 const pageTitle = ref('');
 const warningMessage = ref('地点和行程可能会有出入，请仔细核对哦~');
-const itineraryDays = ref(3); // 默认3天
-const locationCount = ref(12); // 默认12个地点
-const locations = ref([]); // 地点数据
+const itineraryDays = ref(0); // 初始化为0，根据 tripData
+const locationCount = ref(0); // 初始化为0，根据 tripData
 const activeTab = ref('itinerary'); // 默认显示行程
 const selectedDay = ref('overview'); // 默认选中“总览”
 
@@ -188,9 +189,22 @@ const showLocationConfirm = ref(false);
 const linkTitle = ref('链接标题');
 const linkImage = ref('/static/link_image.png');
 
+// 定义 tripId 变量
+const tripId = ref(null);
+
+// 定义 itineraryData 变量 (grouped by day)
+const itineraryData = ref([]);
+
+// 定义 allLocations (flat list)
+const allLocations = ref([]);
+
+// 定义 tripsById 缓存（假设有本地缓存需求）
+const tripsById = ref({});
+
+// 获取地点类型对应的颜色
 const getLocationTypeColor = (type) => {
   if (type === '交通') {
-    return { color: '' }; // 交通 - 蓝色
+    return { color: 'blue' }; // 交通 - 蓝色
   } else if (type === '吃喝') {
     return { color: '#E99D42' }; // 吃喝 - 黄色
   } else if (type === '景点') {
@@ -199,104 +213,68 @@ const getLocationTypeColor = (type) => {
   return {}; // 默认情况
 };
 
-// 页面加载时从数据库获取地点信息
-onMounted(() => {
-  // 获取当前页面的 eventChannel
-  const eventChannel = getCurrentInstance().proxy.getOpenerEventChannel();
-  eventChannel.on('importData', (data) => {
-    console.log('接收到的导入数据:', data);
-    if (data.title) {
-      linkTitle.value = data.title;
-      pageTitle.value = data.title; // 更新页面标题
-    }
-    if (data.photo) {
-      linkImage.value = data.photo.replace(/^http:/, 'https:');
-    }
-    if (data.trip_id) {
-      tripId.value = data.trip_id;
-      // 当接收到 trip_id 后，获取行程数据
-      fetchTripData(tripId.value);
-    }
-  });
-});
-// const itineraryData = ref([
-//   {
-//     day: 1,
-//     locations: [
-//       { 
-//         name: '福州站', 
-//         type: '交通', 
-//         address: '福州市晋安区华林路602号', 
-//         thumbnail: '/static/link_image.png', 
-//         isSelected: true // 确保添加 isSelected 属性
-//       },
-//       {
-//         name: '三坊七巷',
-//         type: '景点',
-//         address: '福州市鼓楼区文儒坊6号',
-//         thumbnail: '/static/link_image.png',
-//         isSelected: true
-//       },
-//       {
-//         name: '鼓山',
-//         type: '景点',
-//         address: '福州市晋安区鼓山路',
-//         thumbnail: '/static/link_image.png',
-//         isSelected: true
-//       },
-//       {
-//         name: '达明美食街',
-//         type: '吃喝',
-//         address: '福州市鼓楼区达明路186号',
-//         thumbnail: '/static/link_image.png',
-//         isSelected: true
-//       }
-//     ]
-//   },
-//   {
-//     day: 2,
-//     locations: [
-//       { 
-//         name: '同利肉燕（道山路店)', 
-//         type: '吃喝', 
-//         address: '福州市鼓楼区道山路157号', 
-//         thumbnail: '/static/link_image.png', 
-//         isSelected: true
-//       },
-//       {
-//         name: '上下杭历史文化街区',
-//         type: '景点',
-//         address: '福建省福州市台江区上下杭牌坊',
-//         thumbnail: '/static/link_image.png',
-//         isSelected: true
-//       },
-//       {
-//         name: '唐沫茶兮（达明路）',
-//         type: '吃喝',
-//         address: '福州市鼓楼区杨桥东路26号',
-//         thumbnail: '/static/link_image.png',
-//         isSelected: true
-//       },
-//       {
-//         name: '西禅古寺',
-//         type: '景点',
-//         address: '福州市鼓楼区洪山镇工业路455号',
-//         thumbnail: '/static/link_image.png',
-//         isSelected: true
-//       },
-//       {
-//         name: '公园路甜汤',
-//         type: '吃喝',
-//         address: '福州市鼓楼区公园路',
-//         thumbnail: '/static/link_image.png',
-//         isSelected: true
-//       }
-//     ]
-//   },
-// ]);
+// 获取路由对象
+const route = useRoute();
 
-// 获取行程数据
-const fetchTripData = (tripId) => {
+// 规范化描述函数
+const cleanDescription = (desc) => {
+  if (!desc) return '';
+  
+  // Step 1: 移除开头的引号
+  let cleaned = desc.replace(/^[‘’"']+/, '');
+  
+  // Step 2: 移除结尾的引号
+  cleaned = cleaned.replace(/[‘’"']+$/, '');
+
+  // Step 3: 移除结尾的中文和英文逗号
+  cleaned = cleaned.replace(/[，,]$/, '');
+
+  // 去除首尾多余的空格
+  return cleaned.trim();
+};
+
+
+
+
+// 页面加载时获取 trip_id 并获取行程数据
+onMounted(() => {
+  // 从路由查询参数中获取 trip_id
+  const queryTripId = route.query.trip_information_id || route.query.trip_id || route.query.id;
+
+  if (queryTripId) {
+    console.log('获取到的 tripId:', queryTripId);
+    tripId.value = queryTripId; // 将 tripId 存储到响应式变量中
+
+    // 判断是本地数据还是从服务器获取数据
+    if (tripsById.value[queryTripId]) {
+      // 使用本地的行程数据进行初始化
+      console.log('使用本地行程数据');
+      initTripData(tripsById.value[queryTripId]);
+    } else {
+      // 使用服务器数据
+      console.log('请求服务器获取行程数据');
+      fetchTripActivities(queryTripId);
+    }
+  } else {
+    console.error('未找到 trip_id 或 trip_information_id 参数');
+    uni.showToast({
+      title: '未找到行程ID，请重新进入页面',
+      icon: 'none',
+      duration: 3000
+    });
+  }
+});
+
+// 从服务器获取行程数据
+const fetchTripActivities = (tripIdParam) => {
+  if (!tripIdParam) {
+    uni.showToast({
+      title: '缺少行程 ID',
+      icon: 'none',
+    });
+    return;
+  }
+
   // 获取本地存储中的 access_token
   const token = uni.getStorageSync('access_token');
   if (!token) {
@@ -307,63 +285,178 @@ const fetchTripData = (tripId) => {
     return;
   }
 
-  // 发送 GET 请求获取行程数据
+  // 显示加载提示
+  uni.showLoading({
+    title: '加载中...',
+  });
+
+  // 构建请求 URL，添加查询参数，参数名为 trip_information_id
+  const url = `https://734dw56037em.vicp.fun/api/trip/get_trip_activities/?trip_information_id=${tripIdParam}`;
+  console.log('请求 URL:', url);
+
+  // 发起 GET 请求
   uni.request({
-    url: `https://734dw56037em.vicp.fun/api/trip/AiCreateUrls/${tripId}/`, // 根据实际情况调整 URL
+    url: url,
     method: 'GET',
     header: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
     success: (res) => {
-      console.log('获取到的行程数据:', res.data);
+      console.log('响应数据:', res);
       if (res.statusCode === 200) {
-        // 更新页面的数据
-        updateTripData(res.data);
+        const tripData = res.data; // 假设响应包含 'activities' 和 'trip'
+
+        if (!tripData || !tripData.activities || !tripData.trip) {
+          console.error('未获取到有效的行程数据');
+          uni.showToast({
+            title: '未获取到有效的行程数据',
+            icon: 'none',
+          });
+          return;
+        }
+
+        console.log('行程数据:', tripData);
+        // 将获取到的行程数据存入本地缓存
+        tripsById.value[tripIdParam] = tripData;
+        initTripData(tripData);
       } else {
         uni.showToast({
-          title: '获取行程数据失败',
+          title: res.data.error || '请求失败',
           icon: 'none',
         });
       }
     },
     fail: (err) => {
+      console.error('请求失败:', err);
       uni.showToast({
-        title: '网络请求失败，请检查网络连接',
+        title: '网络请求失败，请稍后重试',
         icon: 'none',
       });
+    },
+    complete: () => {
+      uni.hideLoading();
     },
   });
 };
 
+// 初始化行程数据
+const initTripData = (tripData) => {
+  // 假设 tripData 包含 activities 和 trip
+  const tripInfo = tripData.trip && tripData.trip.length > 0 ? tripData.trip[0] : {};
 
-// 更新页面数据
-const updateTripData = (tripData) => {
-  // 更新行程天数
-  itineraryDays.value = tripData.day_counts || 0;
+  // 设置 linkTitle 和 pageTitle
+  if (tripInfo.trip_name) {
+    linkTitle.value = tripInfo.trip_name;
+    pageTitle.value = tripInfo.trip_name; // 更新页面标题
+  }
+
+  // 设置 linkImage，如果 tripInfo 有 photo 则使用，否则保持默认
+  if (tripInfo.photo) {
+    linkImage.value = tripInfo.photo.replace(/^http:/, 'https:');
+  }
+
+  // 处理 activities
+  const activities = tripData.activities || [];
+
+  // 确定行程天数
+  const daysSet = new Set();
+  activities.forEach(activity => {
+    if (activity.days) {
+      daysSet.add(activity.days);
+    }
+  });
+  itineraryDays.value = daysSet.size;
 
   // 更新地点总数
-  let totalLocations = 0;
-  if (tripData.locations && Array.isArray(tripData.locations)) {
-    tripData.locations.forEach(day => {
-      if (day.locations && Array.isArray(day.locations)) {
-        totalLocations += day.locations.length;
-      }
+  locationCount.value = activities.length;
+
+  // 按天分组活动
+  const groupedByDay = {};
+
+  activities.forEach(activity => {
+    const day = activity.days;
+    if (!groupedByDay[day]) {
+      groupedByDay[day] = [];
+    }
+    groupedByDay[day].push({
+      id: activity.id,
+      name: activity.trip_destination,
+      type: activity.tag,
+      description: cleanDescription(activity.description), // 规范化描述
+      address: '', // 已不使用 address，保持空字符串以避免模板报错
+      thumbnail: activity.photo || '/static/link_image.png',
+      reservation_method: activity.reservation_method,
+      isSelected: true, // 初始化为选中状态
     });
-  }
-  locationCount.value = totalLocations;
+  });
 
-  // 更新行程数据
-  itineraryData.value = tripData.locations || [];
+  // 转换为 itineraryData 数组
+  const itineraryArray = [];
+  const sortedDays = Array.from(daysSet).sort((a, b) => a - b);
+  sortedDays.forEach(dayNum => {
+    itineraryArray.push({
+      day: dayNum,
+      locations: groupedByDay[dayNum],
+    });
+  });
 
-  // 如果需要更新其他数据，如警告信息等，可以在此处处理
+  itineraryData.value = itineraryArray;
+
+  // 创建所有地点的扁平化列表
+  allLocations.value = activities.map(activity => ({
+    id: activity.id,
+    name: activity.trip_destination,
+    type: activity.tag,
+    description: cleanDescription(activity.description), // 规范化描述
+    address: '', // 已不使用 address，保持空字符串以避免模板报错
+    thumbnail: activity.photo || '/static/link_image.png',
+    reservation_method: activity.reservation_method,
+    isSelected: true,
+  }));
+
+  // 更新行程天数和地点总数
+  itineraryDays.value = sortedDays.length;
+  locationCount.value = activities.length;
+
+  // 输出调试信息
+  console.log('itineraryData:', toRaw(itineraryData.value));
+  console.log('allLocations:', toRaw(allLocations.value));
 };
 
-const toggleSelection = (dayIndex, locationIndex) => {
-  const day = itineraryData.value[dayIndex];
-  const location = day.locations[locationIndex];
-  if (location) {
-    location.isSelected = !location.isSelected; // 切换选中状态
+
+// 获取 day 对应的 dayIndex
+const getDayIndex = (day) => {
+  return itineraryData.value.findIndex(d => d.day === day);
+};
+
+// 获取特定 day 的地点列表
+const getDayLocations = (day) => {
+  const dayIndex = getDayIndex(day);
+  if (dayIndex !== -1) {
+    return itineraryData.value[dayIndex].locations;
+  }
+  return [];
+};
+
+// 切换选择状态
+const toggleSelection = (locationId) => {
+  if (activeTab.value === 'itinerary') {
+    // 在行程标签下，通过 locationId 找到对应的地点并切换状态
+    itineraryData.value.forEach(day => {
+      day.locations.forEach(location => {
+        if (location.id === locationId) {
+          location.isSelected = !location.isSelected;
+        }
+      });
+    });
+  } else if (activeTab.value === 'locations') {
+    // 在地点标签下，通过 locationId 找到对应的地点并切换状态
+    allLocations.value.forEach(location => {
+      if (location.id === locationId) {
+        location.isSelected = !location.isSelected;
+      }
+    });
   }
 };
 
@@ -383,6 +476,49 @@ const toggleTab = (tab) => {
 const selectDay = (day) => {
   selectedDay.value = day;
 };
+
+// 收集用户选择的行程和地点
+const collectSelectedActivities = () => {
+  const selectedItinerary = [];
+  itineraryData.value.forEach(day => {
+    const selectedLocations = day.locations.filter(location => location.isSelected);
+    if (selectedLocations.length > 0) {
+      selectedItinerary.push({
+        day: day.day,
+        locations: selectedLocations
+      });
+    }
+  });
+
+  const selectedLocations = allLocations.value.filter(location => location.isSelected);
+
+  return {
+    itinerary: selectedItinerary,
+    locations: selectedLocations
+  };
+};
+
+// 创建新行程并跳转到 Overview 页面
+const createNewTrip = () => {
+  const selectedActivities = collectSelectedActivities();
+
+  // 将选中的活动传递给 Overview 页面
+  uni.navigateTo({
+    url: `/pages/Overview/Overview?trip_id=${tripId.value}`,
+    success: (res) => {
+      // 向目标页面传递数据
+      res.eventChannel.emit('sendSelectedActivities', selectedActivities);
+    },
+    fail: (err) => {
+      console.error('跳转到 Overview 页面失败:', err);
+      uni.showToast({
+        title: '跳转失败，请稍后重试',
+        icon: 'none',
+      });
+    },
+  });
+};
+
 
 // 跳转到 create_method 页面
 const closePage = () => {
@@ -598,7 +734,7 @@ const closePage = () => {
   margin-top: 18rpx;
 }
 
-.location-address {
+.location-description {
   color: #000;
   font-size: 24rpx;
 }

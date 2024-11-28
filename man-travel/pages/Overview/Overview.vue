@@ -477,7 +477,15 @@ mounted() {
                     this.setCurrentDay(day);
                 }
             },
-
+			
+			goBack() {
+			      // 返回到首页 index.vue
+			      uni.navigateTo({
+			        url: '/pages/index/index'
+			      });
+			    },
+				
+				
             // 设置当前展示的天数
             setCurrentDay(day) {
                 this.currentDay = day;
