@@ -63,6 +63,9 @@ export default {
   methods: {
 	   async toggleCompletion(item) {
 	      // 确定新的状态值
+		   console.log('当前点击的item.id:', item.id);
+           const itemId = parseInt(item.id, 10);
+
 	      const newStatus = item.status === 'yes' ? 'no' : 'yes';
 	  
 	      // 构建请求体
@@ -75,8 +78,8 @@ export default {
 	  
 	      // 发送 POST 请求更新状态
 	      try {
-	        const response = await fetch('http://127.0.0.1:8000/api/memos/memos/',  {
-	          method: 'POST',
+	        const response = await fetch(`http://127.0.0.1:8000/api/memos/memos/${item.id}/`,  {
+	          method: 'PUT',
 	          headers: {
 	            'Content-Type': 'application/json',
 	            'Authorization': `Bearer ${this.token}` // 如果需要认证的话
