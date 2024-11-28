@@ -96,6 +96,7 @@ export default {
 .travel-plan-overview-page {
   background-color: #e1f0ff;
   padding: 20px;
+  min-height: 100vh;
 }
 
 /* 返回按钮容器样式 */
@@ -169,7 +170,12 @@ export default {
   background-color: white;
   border-radius: 20px;
   padding: 20px;
-  margin-top: 20px;
+  min-height: 60vh; /* 设置最小高度为视口的100% */
+  margin-top: 0; /* 移除上边距 */
+  margin-left: auto; /* 水平居中 */
+  margin-right: auto; /* 水平居中 */
+  width: calc(100% - 40px); /* 设置宽度为屏幕宽度减去左右内边距 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 可选，添加阴影以增强视觉效果 */
 }
 
 /* 行李清单内容样式 */
@@ -206,30 +212,43 @@ export default {
 }
 
 /* 插图样式 */
+/* 插图样式 */
+/* 插图样式 */
 .illustration {
-  width: 120px;
+  width: 150px;
   height: auto;
-  margin-top: 20px;
+  display: block; /* 使图片块级显示，以便居中 */
+  margin-left: auto; /* 水平居中 */
+  margin-right: auto; /* 水平居中 */
+  margin-top: 20px; /* 与上方元素的间距 */
+  margin-bottom: 20px; /* 与下方元素的间距 */
 }
 
 /* 提示文字样式 */
 .reminder-text {
-  font-size: 14px;
-  color: #333;
-  margin-top: 10px;
-  line-height: 1.5;
+  font-size: 16px;
+  color: #555;
+  text-align: center; /* 水平居中文本 */
+  margin-top: 5px; /* 与上方元素的间距 */
+  line-height: 1.6;
   white-space: pre-line;
-  margin-bottom: 20px;
+  margin-bottom: 25px; /* 与下方元素的间距 */
 }
 
 /* 添加按钮样式 */
+/* 添加按钮样式 */
 .add-button {
+  position: fixed; /* 固定定位 */
+  bottom: 20px; /* 距离底部20px */
+  left: 50%; /* 距离左侧50% */
+  transform: translateX(-50%); /* 向左移动自身宽度的一半，实现水平居中 */
+  width: 90%; /* 按钮宽度为白色区域宽度的90% */
   background-color: #4a90e2;
   color: white;
   padding: 10px 20px;
   border-radius: 20px;
   font-size: 16px;
-  margin-top: 20px;
+  z-index: 100; /* 确保按钮在其他内容之上 */
 }
 
 /* 标签动画 */

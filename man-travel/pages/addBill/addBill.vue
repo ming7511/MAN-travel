@@ -125,6 +125,7 @@ export default {
 
       try {
         // 构造请求体
+		const token = uni.getStorageSync('access_token');
         const requestData = {
           category: this.categories[this.selectedCategory].name,
           remark: this.remark,
@@ -136,13 +137,13 @@ export default {
         // 设置 headers，包括身份认证信息
         const config = {
           headers: {
-            'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyMDQ3NjQ5MDI0LCJpYXQiOjE3MzIyODkwMjQsImp0aSI6ImJkYmYzMWRlMTAwNTQ4ZTE5ZmI4NWQ5MDhjMGUzODZhIiwidXNlcl9pZCI6M30.JgXdiNcV3wVC73KWKORyOERdyeElEIm4ER5uWuNU3B0', // 替换为实际的 Bearer 令牌
+            'Authorization': 'Bearer ' + 'token', // 替换为实际的 Bearer 令牌
             'Content-Type': 'application/json' // 根据后端要求设置正确的 Content-Type
           }
         };
 
         // 发送 POST 请求到后端
-        const response = await axios.post('http://127.0.0.1:8000/api/bills/expenses/', requestData, config);
+        const response = await axios.post('https://734dw56037em.vicp.fun/api/bills/expenses/', requestData, config);
 
         // 处理响应
         uni.showToast({
