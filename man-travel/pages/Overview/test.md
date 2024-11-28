@@ -97,6 +97,7 @@
 				tripData: {}, // 存储从服务器获取的行程数据
 				tripsById: {
 					1: {
+						trip_id:1,
 						title: '【示例】福州三日游 | 在三坊七巷感受榕城秋日古韵',
 						dateRange: '11.01至11.03',
 						duration: '3天2晚',
@@ -236,86 +237,89 @@
 		},
 
 		mounted() {
-			const tripId = this.$route.query.trip_id; // 获取当前路由中的行程ID
-
-			if (tripId) {
-				// 从服务器获取行程数据
-				this.fetchTripActivities(tripId); // 调用 fetchTripActivities 方法
-				console.log('ID是', tripId);
-			} else {
-				// 处理 tripId 不存在的情况
-				console.error('未找到 trip_id 参数');
-			}
+		    const tripId = this.$route.query.trip_id; // 获取当前路由中的行程ID
+		
+		    if (tripId) {
+		        // 从服务器获取行程数据
+		        this.fetchTripActivities(tripId); // 调用 fetchTripActivities 方法
+		        console.log('ID是', tripId);
+		    } else {
+		        // 处理 tripId 不存在的情况
+		        console.error('未找到 trip_id 参数');
+		    }
 		},
 		methods: {
-			// 从服务器获取行程数据
-			fetchTripActivities(tripId) {
-				// 确保 tripId 存在
-				if (!tripId) {
-					uni.showToast({
-						title: '缺少行程 ID',
-						icon: 'none',
-					});
-					return;
-				}
-
-				// 发起 GET 请求，传递 trip_information_id 参数
-				uni.request({
-					url: `http://localhost:8000/api/trip/get-trip-activities/`, // 后端接口地址
-					method: 'GET',
-					data: {
-						trip_information_id: tripId, // 传递行程 ID 参数
-					},
-					success: (res) => {
-						// 处理响应状态码
-						if (res.statusCode === 200) {
-							// 成功返回活动列表
-							const activities = res.data.activities;
-							console.log('活动列表:', activities);
-
-							// 更新活动数据（假设 activities 是一个数据属性）
-							this.activities = activities;
-
-							// 根据返回的行程数据初始化行程相关数据
-							const trip = res.data.trip; // 假设返回的行程数据在 res.data.trip 中
-							this.initTripData(trip);
-
-						} else if (res.statusCode === 400) {
-							// 缺少必要的参数
-							uni.showToast({
-								title: '缺少行程 ID 参数',
-								icon: 'none',
-							});
-						} else if (res.statusCode === 404) {
-							// 行程信息不存在
-							uni.showToast({
-								title: '行程信息不存在',
-								icon: 'none',
-							});
-						} else if (res.statusCode === 500) {
-							// 服务器错误
-							uni.showToast({
-								title: `查询活动时出错: ${res.data.error || '未知错误'}`,
-								icon: 'none',
-							});
-						} else {
-							// 其他错误处理
-							uni.showToast({
-								title: `未知错误: ${res.statusCode}`,
-								icon: 'none',
-							});
-						}
-					},
-					fail: (err) => {
-						// 请求失败时的处理
-						console.error('请求失败:', err);
-						uni.showToast({
-							title: '网络请求失败，请稍后重试',
-							icon: 'none',
-						});
-					},
-				});
-			},
+		    // 从服务器获取行程数据
+		    fetchTripActivities(tripId) {
+		        // 确保 tripId 存在
+		        if (!tripId) {
+		            uni.showToast({
+		                title: '缺少行程 ID',
+		                icon: 'none',
+		            });
+		            return;
+		        }
+		
+		        // 构建带有查询参数的 URL
+		        const url = `http://localhost:8000/api/trip/get-trip-activities/?trip_information_id=${tripId}`;
+		
+		        // 打印请求 URL 以进行调试
+		        console.log('请求 URL:', url);
+		
+		        // 发起 GET 请求
+		        uni.request({
+		            url: url, // 后端接口地址
+		            method: 'GET',
+		            success: (res) => {
+		                // 打印响应以进行调试
+		                console.log('响应数据:', res);
+		
+		                // 处理响应状态码
+		                if (res.statusCode === 200) {
+		                    // 成功返回活动列表
+		                    const activities = res.data.activities;
+		                    console.log('活动列表:', activities);
+		
+		                    // 更新活动数据（确保在 data 中定义了 activities）
+		                    this.activities = activities;
+		
+		                } else if (res.statusCode === 400) {
+		                    // 缺少必要的参数
+		                    uni.showToast({
+		                        title: res.data.error || '缺少行程 ID 参数',
+		                        icon: 'none',
+		                    });
+		                } else if (res.statusCode === 404) {
+		                    // 行程信息不存在
+		                    uni.showToast({
+		                        title: res.data.error || '行程信息不存在',
+		                        icon: 'none',
+		                    });
+		                } else if (res.statusCode === 500) {
+		                    // 服务器错误
+		                    uni.showToast({
+		                        title: `查询活动时出错: ${res.data.error || '未知错误'}`,
+		                        icon: 'none',
+		                    });
+		                } else {
+		                    // 其他错误处理
+		                    uni.showToast({
+		                        title: `未知错误: ${res.statusCode}`,
+		                        icon: 'none',
+		                    });
+		                }
+		            },
+		            fail: (err) => {
+		                // 请求失败时的处理
+		                console.error('请求失败:', err);
+		                uni.showToast({
+		                    title: '网络请求失败，请稍后重试',
+		                    icon: 'none',
+		                });
+		            },
+		        });
+		    },
+		},
 
 
 			// 初始化行程数据
