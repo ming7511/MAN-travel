@@ -49,18 +49,18 @@ const generateRandomColor = () => {
 // 待出发行程数据
 const upcomingTrips = ref([
   {
-    id: 1,
+    trip_id: 1,  // 确保字段名称为 trip_id
     title: '【示例】福州三日游 | 在三坊七巷感受榕城秋日古韵',
     dateRange: '11.01至11.03',
     duration: '3天2晚',
     bgColor: generateRandomColor(),
     places: [
       '烟台山公园', '崔酱炸鸡', '上下杭', '三坊七巷', '后街捞化',
-      '鼓山', '福道', '达明美食街', '森林公园', '温泉公园', '间江夜游'
+      '鼓山', '福道', '达明美食街', '森林公园', '温泉公园', '闽江夜游'
     ]
   },
   {
-    id: 2,
+    trip_id: 2,  // 将 id 改为 trip_id
     title: '【示例】泉州三日游 | 螃蟹游记',
     dateRange: '12.01至12.03',
     duration: '3天2晚',
@@ -72,7 +72,7 @@ const upcomingTrips = ref([
 // 已结束行程数据
 const pastTrips = ref([
   {
-    id: 3,
+    trip_id: 3,  // 将 id 改为 trip_id
     title: '【示例】武汉三日游 | 遍吃逛吃武汉',
     dateRange: '10.01至10.03',
     duration: '3天2晚',
@@ -81,18 +81,22 @@ const pastTrips = ref([
   }
 ]);
 
+
 const goToOverview = (trip) => {
-	console.log('这是主页'); // 打印 token 到控制台
   // 获取并打印 token
-	const token = uni.getStorageSync('access_token'); // 获取存储的 token
-	console.log('这是主页'); // 打印 token 到控制台
-	console.log('Access Token:', token); // 打印 token 到控制台
-	  
-  // 传递行程的 id 到 Overview 页面
-  uni.navigateTo({
-    url: `/pages/Overview/Overview?id=${trip.id}`
-  });
+  const token = uni.getStorageSync('access_token');
+  console.log('Access Token:', token); // 打印 token 到控制台
+  
+  // 使用 trip_id 进行页面导航
+  if (trip.trip_id) {
+    uni.navigateTo({
+      url: `/pages/Overview/Overview?trip_id=${trip.trip_id}`
+    });
+  } else {
+    console.error('行程中缺少 trip_id');
+  }
 };
+
 </script>
 
 <style scoped>

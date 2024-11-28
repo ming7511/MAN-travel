@@ -40,8 +40,6 @@ const goToNextPage = () => {
   if (locationInput.value.trim() !== '') {
     const city = locationInput.value.trim();
 
-    console.log('这是ai城市');
-
     // 从本地存储中获取 access_token
     const token = uni.getStorageSync('access_token'); // 确保获取的是 access_token
 

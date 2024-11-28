@@ -11,8 +11,8 @@
     <!-- 链接框 -->
     <view class="link-container">
       <view class="link-box">
-        <image src="/static/link_image.png" class="link-image" />
-        <text class="link-title">链接标题</text>
+        <image :src="linkImage" class="link-image" />
+        <text class="link-title">{{ linkTitle }}</text>
       </view>
     </view>
   </view>
@@ -169,10 +169,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, getCurrentInstance } from 'vue';
 
 // 数据和变量
-const pageTitle = ref('福州三天两夜旅游攻略来喽~');
+const pageTitle = ref('');
 const warningMessage = ref('地点和行程可能会有出入，请仔细核对哦~');
 const itineraryDays = ref(3); // 默认3天
 const locationCount = ref(12); // 默认12个地点
@@ -183,6 +183,10 @@ const selectedDay = ref('overview'); // 默认选中“总览”
 // 确认框的状态变量
 const showItineraryConfirm = ref(false);
 const showLocationConfirm = ref(false);
+
+// 新增变量用于存储接收到的 title 和 photo
+const linkTitle = ref('链接标题');
+const linkImage = ref('/static/link_image.png');
 
 const getLocationTypeColor = (type) => {
   if (type === '交通') {
@@ -197,102 +201,162 @@ const getLocationTypeColor = (type) => {
 
 // 页面加载时从数据库获取地点信息
 onMounted(() => {
-  locationData();
+  // 获取当前页面的 eventChannel
+  const eventChannel = getCurrentInstance().proxy.getOpenerEventChannel();
+  eventChannel.on('importData', (data) => {
+    console.log('接收到的导入数据:', data);
+    if (data.title) {
+      linkTitle.value = data.title;
+      pageTitle.value = data.title; // 更新页面标题
+    }
+    if (data.photo) {
+      linkImage.value = data.photo.replace(/^http:/, 'https:');
+    }
+    if (data.trip_id) {
+      tripId.value = data.trip_id;
+      // 当接收到 trip_id 后，获取行程数据
+      fetchTripData(tripId.value);
+    }
+  });
 });
-const itineraryData = ref([
-  {
-    day: 1,
-    locations: [
-      { 
-        name: '福州站', 
-        type: '交通', 
-        address: '福州市晋安区华林路602号', 
-        thumbnail: '/static/link_image.png', 
-        isSelected: true // 确保添加 isSelected 属性
-      },
-      {
-        name: '三坊七巷',
-        type: '景点',
-        address: '福州市鼓楼区文儒坊6号',
-        thumbnail: '/static/link_image.png',
-        isSelected: true
-      },
-      {
-        name: '鼓山',
-        type: '景点',
-        address: '福州市晋安区鼓山路',
-        thumbnail: '/static/link_image.png',
-        isSelected: true
-      },
-      {
-        name: '达明美食街',
-        type: '吃喝',
-        address: '福州市鼓楼区达明路186号',
-        thumbnail: '/static/link_image.png',
-        isSelected: true
-      }
-    ]
-  },
-  {
-    day: 2,
-    locations: [
-      { 
-        name: '同利肉燕（道山路店)', 
-        type: '吃喝', 
-        address: '福州市鼓楼区道山路157号', 
-        thumbnail: '/static/link_image.png', 
-        isSelected: true
-      },
-      {
-        name: '上下杭历史文化街区',
-        type: '景点',
-        address: '福建省福州市台江区上下杭牌坊',
-        thumbnail: '/static/link_image.png',
-        isSelected: true
-      },
-      {
-        name: '唐沫茶兮（达明路）',
-        type: '吃喝',
-        address: '福州市鼓楼区杨桥东路26号',
-        thumbnail: '/static/link_image.png',
-        isSelected: true
-      },
-      {
-        name: '西禅古寺',
-        type: '景点',
-        address: '福州市鼓楼区洪山镇工业路455号',
-        thumbnail: '/static/link_image.png',
-        isSelected: true
-      },
-      {
-        name: '公园路甜汤',
-        type: '吃喝',
-        address: '福州市鼓楼区公园路',
-        thumbnail: '/static/link_image.png',
-        isSelected: true
-      }
-    ]
-  },
-]);
+// const itineraryData = ref([
+//   {
+//     day: 1,
+//     locations: [
+//       { 
+//         name: '福州站', 
+//         type: '交通', 
+//         address: '福州市晋安区华林路602号', 
+//         thumbnail: '/static/link_image.png', 
+//         isSelected: true // 确保添加 isSelected 属性
+//       },
+//       {
+//         name: '三坊七巷',
+//         type: '景点',
+//         address: '福州市鼓楼区文儒坊6号',
+//         thumbnail: '/static/link_image.png',
+//         isSelected: true
+//       },
+//       {
+//         name: '鼓山',
+//         type: '景点',
+//         address: '福州市晋安区鼓山路',
+//         thumbnail: '/static/link_image.png',
+//         isSelected: true
+//       },
+//       {
+//         name: '达明美食街',
+//         type: '吃喝',
+//         address: '福州市鼓楼区达明路186号',
+//         thumbnail: '/static/link_image.png',
+//         isSelected: true
+//       }
+//     ]
+//   },
+//   {
+//     day: 2,
+//     locations: [
+//       { 
+//         name: '同利肉燕（道山路店)', 
+//         type: '吃喝', 
+//         address: '福州市鼓楼区道山路157号', 
+//         thumbnail: '/static/link_image.png', 
+//         isSelected: true
+//       },
+//       {
+//         name: '上下杭历史文化街区',
+//         type: '景点',
+//         address: '福建省福州市台江区上下杭牌坊',
+//         thumbnail: '/static/link_image.png',
+//         isSelected: true
+//       },
+//       {
+//         name: '唐沫茶兮（达明路）',
+//         type: '吃喝',
+//         address: '福州市鼓楼区杨桥东路26号',
+//         thumbnail: '/static/link_image.png',
+//         isSelected: true
+//       },
+//       {
+//         name: '西禅古寺',
+//         type: '景点',
+//         address: '福州市鼓楼区洪山镇工业路455号',
+//         thumbnail: '/static/link_image.png',
+//         isSelected: true
+//       },
+//       {
+//         name: '公园路甜汤',
+//         type: '吃喝',
+//         address: '福州市鼓楼区公园路',
+//         thumbnail: '/static/link_image.png',
+//         isSelected: true
+//       }
+//     ]
+//   },
+// ]);
 
-// 模拟从数据库或API获取地点数据
-const locationData = () => {
-  locations.value = [
-    {
-      name: '福州站',
-      type: '交通',
-      address: '福州市晋安区华林路502号',
-      thumbnail: '/static/logo.png',
-      isSelected: false, // 添加 isSelected 属性
+// 获取行程数据
+const fetchTripData = (tripId) => {
+  // 获取本地存储中的 access_token
+  const token = uni.getStorageSync('access_token');
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+    });
+    return;
+  }
+
+  // 发送 GET 请求获取行程数据
+  uni.request({
+    url: `https://734dw56037em.vicp.fun/api/trip/AiCreateUrls/${tripId}/`, // 根据实际情况调整 URL
+    method: 'GET',
+    header: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
-    {
-      name: '三坊七巷',
-      type: '景点',
-      address: '福州市鼓楼区三坊七巷',
-      thumbnail: '/static/logo.png',
-      isSelected: false, // 添加 isSelected 属性
+    success: (res) => {
+      console.log('获取到的行程数据:', res.data);
+      if (res.statusCode === 200) {
+        // 更新页面的数据
+        updateTripData(res.data);
+      } else {
+        uni.showToast({
+          title: '获取行程数据失败',
+          icon: 'none',
+        });
+      }
     },
-  ];
+    fail: (err) => {
+      uni.showToast({
+        title: '网络请求失败，请检查网络连接',
+        icon: 'none',
+      });
+    },
+  });
+};
+
+
+// 更新页面数据
+const updateTripData = (tripData) => {
+  // 更新行程天数
+  itineraryDays.value = tripData.day_counts || 0;
+
+  // 更新地点总数
+  let totalLocations = 0;
+  if (tripData.locations && Array.isArray(tripData.locations)) {
+    tripData.locations.forEach(day => {
+      if (day.locations && Array.isArray(day.locations)) {
+        totalLocations += day.locations.length;
+      }
+    });
+  }
+  locationCount.value = totalLocations;
+
+  // 更新行程数据
+  itineraryData.value = tripData.locations || [];
+
+  // 如果需要更新其他数据，如警告信息等，可以在此处处理
 };
 
 const toggleSelection = (dayIndex, locationIndex) => {

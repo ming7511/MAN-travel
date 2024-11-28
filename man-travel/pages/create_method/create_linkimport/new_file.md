@@ -79,10 +79,10 @@ const closeInputBox = () => {
 
 // 确认按钮点击事件
 const handleConfirm = () => {
-  const input = inputText.value.trim();
+  const link = inputText.value.trim();
 
   // 检查输入是否为空
-  if (input === '') {
+  if (link === '') {
     uni.showToast({
       title: '请输入有效链接',
       icon: 'none',
@@ -90,26 +90,8 @@ const handleConfirm = () => {
     return;
   }
 
-  // 提取链接
-  const extractUrl = (text) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const urls = text.match(urlRegex);
-    return urls ? urls[0] : '';
-  };
-
-  const link = extractUrl(input);
-
-  if (link === '') {
-    uni.showToast({
-      title: '未能从输入中提取到有效链接',
-      icon: 'none',
-    });
-    return;
-  }
-
   // 如果获取到旅行数据，准备上传
   const { city, startDate, endDate, dayCount } = travelData.value || {};
-  console.log('旅行数据：', travelData.value);
 
   // 获取本地存储中的 access_token
   const token = uni.getStorageSync('access_token');
@@ -123,12 +105,12 @@ const handleConfirm = () => {
 
   // 禁用按钮，避免多次点击
   isLoading.value = true;
-  
+
   // 跳转至 loading 页面
   uni.navigateTo({
     url: '/pages/loading/loading', // 跳转到 loading 页面
   });
-  
+
   // 格式化日期为 YYYY-MM-DD
   const formatDate = (date) => {
     if (!date) return '';
@@ -143,25 +125,12 @@ const handleConfirm = () => {
   const formattedStartDate = formatDate(startDate);
   const formattedEndDate = formatDate(endDate);
 
-  // 计算行程天数 day_count
-  const calculateDayCount = (start, end) => {
-    if (!start || !end) return 0;
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
-    const diffTime = endTime - startTime;
-    const diffDays = Math.ceil(diffTime / (1000 * 3600 * 24)) + 1; // 加1包括开始和结束日期
-    return diffDays;
-  };
-
-  const day_count = calculateDayCount(startDate, endDate);
-
   // 打印准备上传的数据
   const dataToUpload = {
-    url: link, // 用户提供的链接
-    trip_name: city, // 用户提供的目的地
-    start_date: formattedStartDate, // 格式化后的开始日期
-    end_date: formattedEndDate, // 格式化后的结束日期
-    day_counts: day_count, // 行程总共的天数
+    url: link,                   // 用户提供的链接
+    trip_name: city,             // 用户提供的目的地
+    start_date: formattedStartDate,  // 格式化后的开始日期
+    end_date: formattedEndDate   // 格式化后的结束日期
   };
 
   console.log('准备上传的数据:', dataToUpload);
@@ -176,32 +145,22 @@ const handleConfirm = () => {
       'Authorization': `Bearer ${token}`, // 将 token 放入 Authorization 头中
     },
     success: (res) => {
-      console.log('服务器响应:', res); // 打印完整的响应数据
+      console.log('服务器响应:', res);  // 打印完整的响应数据
       if (res.statusCode === 201) {
         // 如果响应状态码是201，跳转至 import.vue
         uni.showToast({
           title: '数据上传成功',
           icon: 'success',
         });
-
-        // 提取服务器返回的 title 和 photo
-        const { title, photo, trip_id } = res.data;
-		
-		
-        // 跳转到 import 页面并传递数据
         uni.navigateTo({
-          url: '/pages/create_method/import/import', // 跳转到 import 页面
-          success: function (navigateRes) {
-            // 通过 eventChannel 向被打开页面传送数据
-            navigateRes.eventChannel.emit('importData', { title, photo, trip_id });
-          },
+          url: '/pages/create_method/import/import' // 跳转到 import 页面
         });
       } else {
         // 如果服务器返回的是非成功状态码
         uni.showToast({
           title: '数据上传失败，请稍后再试',
           icon: 'none',
-        });	
+        });
       }
     },
     fail: (err) => {
@@ -217,7 +176,6 @@ const handleConfirm = () => {
     },
   });
 };
-
 
 // 使用 onLoad 生命周期获取页面参数
 onLoad((options) => {
@@ -259,6 +217,9 @@ onLoad((options) => {
   }
 });
 </script>
+
+
+
 
 
 <style scoped>

@@ -303,37 +303,53 @@ const startPlanning = () => {
     },
     success: (res) => {
       console.log('服务器响应:', res);  // 打印完整的响应数据
-      if (res.statusCode === 201) {
-        // 如果响应状态码是201，跳转至 overview 页面
-        uni.showToast({
-          title: '数据上传成功',
-          icon: 'success',
-        });
-        uni.navigateTo({
-          url: '/pages/Overview/new_file'  
-        });
+      if (res.statusCode === 201 || res.statusCode === 200) { // 根据后端返回的状态码调整
+        // 假设服务器在响应体中返回了 trip_information_id
+        const tripId = res.data.trip_information_id || res.data.trip_id || res.data.id || res.data.tripId; // 根据实际响应调整
+        if (tripId) {
+          uni.showToast({
+            title: '数据上传成功',
+            icon: 'success',
+          });
+    
+          // 将需要传递的数据转为 JSON 字符串，然后编码
+          const dataString = encodeURIComponent(JSON.stringify(dataToUpload));
+    
+          // 跳转到 Overview 页面，并传递 trip_information_id 以及其他数据
+          uni.navigateTo({
+            url: `/pages/Overview/Overview?trip_information_id=${tripId}&data=${dataString}` // 传递 trip_information_id 和其他数据
+          });
+        } else {
+          // tripId 不存在
+          uni.showToast({
+            title: '行程创建成功，但未获取到 trip ID',
+            icon: 'none',
+          });
+          console.error('trip ID 未在响应中找到:', res.data);
+        }
       } else {
         // 如果服务器返回的是非成功状态码
         uni.showToast({
-          title: '数据上传失败，请稍后再试',
+          title: res.data.detail || res.data.error || '数据上传失败，请稍后再试',
           icon: 'none',
         });
+        console.error('创建行程失败:', res.data);
       }
     },
-
     fail: (err) => {
       // 请求失败处理
       uni.showToast({
         title: '网络请求失败，请检查网络连接',
         icon: 'none',
       });
+      console.error('请求失败:', err);
     },
     complete: () => {
       // 上传完成后，重置上传状态
       isUploading.value = false;
     },
   });
-};
+  };
 
 
 // 切换选择天数或日期

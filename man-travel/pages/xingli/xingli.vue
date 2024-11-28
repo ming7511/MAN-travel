@@ -96,6 +96,7 @@ export default {
 .travel-plan-overview-page {
   background-color: #e1f0ff;
   padding: 20px;
+  min-height: 100vh;
 }
 
 /* 返回按钮容器样式 */
