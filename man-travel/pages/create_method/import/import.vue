@@ -79,7 +79,7 @@
           <text class="day-heading">DAY{{ day.day }}</text>
           <view v-for="(location, index) in day.locations" :key="index" class="location-item">
             <view class="location-thumbnail">
-              <image :src="location.thumbnail" class="thumbnail" />
+              <image :src="location.photo" class="thumbnail" @error="(event) => event.target.src = '/static/link_image.png'" />
             </view>
             <view class="location-info">
               <text class="location-name">{{ location.name }}</text>
@@ -109,7 +109,7 @@
         </view>
         <view v-for="(location, index) in itineraryData[selectedDay - 1].locations" :key="index" class="location-item">
           <view class="location-thumbnail">
-            <image :src="location.thumbnail" class="thumbnail" />
+            <image :src="location.photo" class="thumbnail" @error="(event) => event.target.src = '/static/link_image.png'" />
           </view>
           <view class="location-info">
             <text class="location-name">{{ location.name }}</text>
@@ -133,7 +133,7 @@
       <view v-for="(day, dayIndex) in itineraryData" :key="dayIndex">
         <view v-for="(location, index) in day.locations" :key="index" class="location-item">
           <view class="location-thumbnail">
-            <image :src="location.thumbnail" class="thumbnail" />
+            <image :src="location.photo" class="thumbnail" @error="(event) => event.target.src = '/static/link_image.png'" />
           </view>
           <view class="location-info">
             <text class="location-name">{{ location.name }}</text>
@@ -162,7 +162,6 @@
     <text class="confirm-text white-text">创建为新的行程</text>
   </view>
 
-
   <!-- 地点确认框 -->
   <view v-if="showLocationConfirm" class="confirm-box white-confirm">
     <text class="confirm-text black-text">添加至行程</text>
@@ -170,7 +169,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, toRaw } from 'vue';
+import { ref, onMounted, toRaw, getCurrentInstance } from 'vue'
 import { useRoute } from 'vue-router'; // 导入 useRoute 以获取路由信息
 
 // 数据和变量
@@ -205,7 +204,7 @@ const tripsById = ref({});
 const getLocationTypeColor = (type) => {
   if (type === '交通') {
     return { color: 'blue' }; // 交通 - 蓝色
-  } else if (type === '吃喝') {
+  } else if (type === '美食') {
     return { color: '#E99D42' }; // 吃喝 - 黄色
   } else if (type === '景点') {
     return { color: '#54BCBD' }; // 景点 - 绿色
@@ -238,6 +237,25 @@ const cleanDescription = (desc) => {
 
 // 页面加载时获取 trip_id 并获取行程数据
 onMounted(() => {
+  // 获取 eventChannel
+  const instance = getCurrentInstance();
+  const eventChannel = instance.proxy.getOpenerEventChannel && instance.proxy.getOpenerEventChannel();
+
+  if (eventChannel) {
+    eventChannel.on('acceptDataFromOpenerPage', (data) => {
+      console.log('接收到的数据:', data);
+      // data 包含 title 和 photo
+      if (data.title) {
+        linkTitle.value = data.title;
+        pageTitle.value = data.title;
+      }
+      if (data.photo) {
+        linkImage.value = data.photo; // 保持原始的 URL
+      }
+    });
+  }
+
+
   // 从路由查询参数中获取 trip_id
   const queryTripId = route.query.trip_information_id || route.query.trip_id || route.query.id;
 
@@ -249,7 +267,9 @@ onMounted(() => {
     if (tripsById.value[queryTripId]) {
       // 使用本地的行程数据进行初始化
       console.log('使用本地行程数据');
-      initTripData(tripsById.value[queryTripId]);
+      initTripData(tripsById.value[queryTripId]).then(() => {
+        // 照片已在 initTripData 中获取
+      });
     } else {
       // 使用服务器数据
       console.log('请求服务器获取行程数据');
@@ -266,7 +286,7 @@ onMounted(() => {
 });
 
 // 从服务器获取行程数据
-const fetchTripActivities = (tripIdParam) => {
+const fetchTripActivities = async (tripIdParam) => {
   if (!tripIdParam) {
     uni.showToast({
       title: '缺少行程 ID',
@@ -302,7 +322,7 @@ const fetchTripActivities = (tripIdParam) => {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    success: (res) => {
+    success: async (res) => {
       console.log('响应数据:', res);
       if (res.statusCode === 200) {
         const tripData = res.data; // 假设响应包含 'activities' 和 'trip'
@@ -319,7 +339,8 @@ const fetchTripActivities = (tripIdParam) => {
         console.log('行程数据:', tripData);
         // 将获取到的行程数据存入本地缓存
         tripsById.value[tripIdParam] = tripData;
-        initTripData(tripData);
+        // 初始化行程数据并获取照片
+        await initTripData(tripData);
       } else {
         uni.showToast({
           title: res.data.error || '请求失败',
@@ -340,21 +361,84 @@ const fetchTripActivities = (tripIdParam) => {
   });
 };
 
+// 辅助函数，用于延迟指定的毫秒数
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// 获取单个活动的照片
+const getActivityPhoto = (activityId) => {
+  return new Promise((resolve, reject) => {
+    const token = uni.getStorageSync('access_token');
+    if (!token) {
+      reject('未找到 access_token，请先登录');
+      return;
+    }
+
+    const url = `https://734dw56037em.vicp.fun/api/trip/trip-photo/${activityId}/`;
+    console.log(`请求 trip-photo URL: ${url}`);
+
+    uni.request({
+      url: url,
+      method: 'GET',
+      header: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.poi && res.data.poi.url) {
+          // 获取 poi.url，并将 http 改为 https
+          const photoUrl = res.data.poi.url; // 保持原始的 URL
+          resolve(photoUrl);
+        } else {
+          console.warn(`未能获取活动 ID ${activityId} 的照片:`, res.data.error || '未知错误');
+          resolve('/static/link_image.png'); // 使用默认图片
+        }
+      },
+      fail: (err) => {
+        console.error(`获取活动 ID ${activityId} 照片失败:`, err);
+        resolve('/static/link_image.png'); // 使用默认图片
+      },
+    });
+  });
+};
+
+// 获取所有活动的照片，限制每秒最多3个请求
+const fetchAllPhotos = async () => {
+  const batchSize = 3; // 每批请求数量
+  const delayMs = 1000; // 每批请求之间的延迟时间（毫秒）
+
+  // 过滤出需要获取照片的活动
+  const locationsToFetch = allLocations.value.filter(location => !location.photo || location.photo === '/static/link_image.png');
+
+  for (let i = 0; i < locationsToFetch.length; i += batchSize) {
+    const batch = locationsToFetch.slice(i, i + batchSize);
+
+    // 为当前批次的每个活动创建请求
+    const batchPromises = batch.map(async (location) => {
+      try {
+        const photoUrl = await getActivityPhoto(location.id);
+        location.photo = photoUrl;
+      } catch (error) {
+        console.warn(`获取活动 ID ${location.id} 照片时出错:`, error);
+        location.photo = '/static/link_image.png'; // 使用默认图片
+      }
+    });
+
+    // 等待当前批次的所有请求完成
+    await Promise.all(batchPromises);
+    console.log(`第 ${i / batchSize + 1} 批次的照片已更新`);
+
+    // 如果还有下一批请求，等待一秒钟
+    if (i + batchSize < locationsToFetch.length) {
+      await delay(delayMs);
+    }
+  }
+
+  console.log('所有活动的照片已更新:', toRaw(allLocations.value));
+};
+
 // 初始化行程数据
-const initTripData = (tripData) => {
-  // 假设 tripData 包含 activities 和 trip
-  const tripInfo = tripData.trip && tripData.trip.length > 0 ? tripData.trip[0] : {};
-
-  // 设置 linkTitle 和 pageTitle
-  if (tripInfo.trip_name) {
-    linkTitle.value = tripInfo.trip_name;
-    pageTitle.value = tripInfo.trip_name; // 更新页面标题
-  }
-
-  // 设置 linkImage，如果 tripInfo 有 photo 则使用，否则保持默认
-  if (tripInfo.photo) {
-    linkImage.value = tripInfo.photo.replace(/^http:/, 'https:');
-  }
+const initTripData = async (tripData) => {
+  // ...（前面的代码保持不变）
 
   // 处理 activities
   const activities = tripData.activities || [];
@@ -371,24 +455,34 @@ const initTripData = (tripData) => {
   // 更新地点总数
   locationCount.value = activities.length;
 
-  // 按天分组活动
+  // 使用一个映射来存储地点对象
+  const locationMap = {};
   const groupedByDay = {};
 
   activities.forEach(activity => {
     const day = activity.days;
+
+    // 创建或获取地点对象
+    let location = locationMap[activity.id];
+    if (!location) {
+      location = {
+        id: activity.id,
+        name: activity.trip_destination,
+        type: activity.tag,
+        description: cleanDescription(activity.description),
+        address: '',
+        photo: activity.photo || '/static/link_image.png',
+        reservation_method: activity.reservation_method,
+        isSelected: true,
+      };
+      locationMap[activity.id] = location;
+    }
+
+    // 将地点对象添加到 groupedByDay 中
     if (!groupedByDay[day]) {
       groupedByDay[day] = [];
     }
-    groupedByDay[day].push({
-      id: activity.id,
-      name: activity.trip_destination,
-      type: activity.tag,
-      description: cleanDescription(activity.description), // 规范化描述
-      address: '', // 已不使用 address，保持空字符串以避免模板报错
-      thumbnail: activity.photo || '/static/link_image.png',
-      reservation_method: activity.reservation_method,
-      isSelected: true, // 初始化为选中状态
-    });
+    groupedByDay[day].push(location);
   });
 
   // 转换为 itineraryData 数组
@@ -404,16 +498,7 @@ const initTripData = (tripData) => {
   itineraryData.value = itineraryArray;
 
   // 创建所有地点的扁平化列表
-  allLocations.value = activities.map(activity => ({
-    id: activity.id,
-    name: activity.trip_destination,
-    type: activity.tag,
-    description: cleanDescription(activity.description), // 规范化描述
-    address: '', // 已不使用 address，保持空字符串以避免模板报错
-    thumbnail: activity.photo || '/static/link_image.png',
-    reservation_method: activity.reservation_method,
-    isSelected: true,
-  }));
+  allLocations.value = Object.values(locationMap);
 
   // 更新行程天数和地点总数
   itineraryDays.value = sortedDays.length;
@@ -422,8 +507,10 @@ const initTripData = (tripData) => {
   // 输出调试信息
   console.log('itineraryData:', toRaw(itineraryData.value));
   console.log('allLocations:', toRaw(allLocations.value));
-};
 
+  // 获取所有活动的照片
+  await fetchAllPhotos();
+};
 
 // 获取 day 对应的 dayIndex
 const getDayIndex = (day) => {
