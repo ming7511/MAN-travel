@@ -30,8 +30,8 @@
 			<view class="day-buttons">
 				<!-- 行程天数按钮 -->
 				<button v-for="(day, index) in days" :key="index"
-					:class="['day-button', { active: currentDay === day }]"
-					@click="handleDayClick(day)">{{ day }}</button>
+				        :class="['day-button', { active: currentDay === day }]"
+				        @click="handleDayClick(day)">{{ day.startsWith('总览')? day : `DAY${parseInt(day.match(/(\d+)/)[1])}` }}</button>
 			</view>
 			<!-- 行程概览标题 -->
 			<view class="overview-title">行程概览</view>
@@ -232,6 +232,7 @@
                 }
             };
         },
+		
 
         mounted() {
             // 先检查是否有本地 trip_id，如果没有再查找服务器返回的 trip_information_id
@@ -389,21 +390,21 @@
                     this.placeCoordinates = {};
                     this.dailyTrips = [];
                     const activitiesByDay = {};
-                    activities.forEach(activity => {
+                      activities.forEach(activity => {
                         const dayKey = `DAY${activity.days}`;
                         if (!activitiesByDay[dayKey]) {
-                            activitiesByDay[dayKey] = [];
+                          activitiesByDay[dayKey] = [];
                         }
                         activitiesByDay[dayKey].push(activity.trip_destination);
-                    });
-            
-                    for (let day in activitiesByDay) {
+                      });
+                    
+                      for (let day in activitiesByDay) {
                         this.dailyTrips.push({
-                            day: day,
-                            city: tripInfo.trip_name,
-                            places: activitiesByDay[day].join(' - ')
+                          day: day,
+                          city: tripInfo.trip_name,
+                          places: activitiesByDay[day].join(' - ')
                         });
-                    }
+                      }
             
                     this.days = ['总览',...Array.from({ length: daysDiff }, (_, i) => `DAY${i + 1}`)];
             
@@ -553,19 +554,34 @@
 
             // 点击行程天数按钮后的跳转逻辑
             handleDayClick(day) {
+                console.log('当前 this.tripId 的值：', this.tripId);
+                console.log('this.tripId 的数据类型：', typeof this.tripId);
                 if (!this.tripId) {
                     console.error('未找到 trip_id 参数');
                     return;
                 }
-
-                if (day !== '总览') {
-                    const selectedTrip = this.dailyTrips.find((trip) => trip.day === day);
-                    if (selectedTrip) {
-                        let places = selectedTrip.places;
-                        const placesEncoded = encodeURIComponent(places);
+                console.log('当前 this.dailyTrips 的数据：', this.dailyTrips);
+                console.log('this.dailyTrips 的数据类型：', typeof this.dailyTrips);
+                console.log('this.dailyTrips 的长度：', this.dailyTrips.length);
+                if (day!== '总览') {
+                    if (this.dailyTrips.length === 0) {
+                        // 当dailyTrips为空时，直接跳转到DayDetail页面去添加行程，传递必要参数并通过query参数表明是添加行程操作
+						console.log('准备跳转到DayDetail组件，当前tripId的值：', this.tripId);
+						console.log('拼接好的跳转URL：', `/pages/DayDetail/DayDetail?day=${day}&id=${this.tripId}&isAddTrip=true&title=${encodeURIComponent(this.tripTitle)}&dateRange=${encodeURIComponent(this.travelDateRange)}&duration=${encodeURIComponent(this.tripDuration)}&days=${encodeURIComponent(this.days.join(' - '))}`);
+                        console.log('准备传递给DayDetail组件的tripId值:', this.tripId, '类型:', typeof this.tripId);
                         uni.navigateTo({
-                            url: `/pages/DayDetail/DayDetail?day=${day}&id=${this.tripId}&places=${placesEncoded}`
+                            url: `/pages/DayDetail/DayDetail?day=${day}&tripId=${this.tripId}&title=${encodeURIComponent(this.tripTitle)}&dateRange=${encodeURIComponent(this.travelDateRange)}&duration=${encodeURIComponent(this.tripDuration)}&days=${encodeURIComponent(this.days.join(' - '))}`
                         });
+                    } else {
+                        const selectedTrip = this.dailyTrips.find((trip) => trip.day === day);
+                        if (selectedTrip) {
+                            let places = selectedTrip.places;
+                            const placesEncoded = encodeURIComponent(places);
+							console.log('准备传递给DayDetail组件的tripId值:', this.tripId);
+                            uni.navigateTo({
+                                url: `/pages/DayDetail/DayDetail?day=${day}&tripId=${this.tripId}&title=${encodeURIComponent(this.tripTitle)}&dateRange=${encodeURIComponent(this.travelDateRange)}&duration=${encodeURIComponent(this.tripDuration)}&days=${encodeURIComponent(this.days.join(' - '))}`
+                            });
+                        }
                     }
                 } else {
                     this.setCurrentDay(day);
@@ -742,6 +758,7 @@
 			  overflow-x: auto; /* 使容器可以左右滑动 */
 			  white-space: nowrap; /* 防止子元素换行 */
 			  margin-bottom: 5px;
+			  -webkit-overflow-scrolling: touch; /* 启用iOS惯性滚动效果 */
 			}
 			
 			.day-button {
