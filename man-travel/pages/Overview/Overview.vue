@@ -24,8 +24,6 @@
 			<view class="horizontal-line"></view>
 		</view>
 
-
-
 		<!-- 白色矩形区域 -->
 		<view class="white-rectangle">
 			<!-- 行程天数按钮 -->
@@ -525,6 +523,23 @@
                     });
                 }
             },
+			
+			// 点击“行程”按钮的跳转逻辑
+			handleShowOverview() {
+			    const tripId = this.tripId;
+			    if (tripId) {
+			        uni.navigateTo({
+			            url: `/pages/Overview/Overview?id=${tripId}`
+			        });
+			    } else {
+			        console.error('未找到 trip_id 参数，无法跳转到行程页面');
+			        uni.showToast({
+			            title: '未找到行程 ID，无法跳转',
+			            icon: 'none',
+			            duration: 3000
+			        });
+			    }
+			},
 
             // 点击“旅行账单”按钮的跳转逻辑
             handleShouyeClick() {
