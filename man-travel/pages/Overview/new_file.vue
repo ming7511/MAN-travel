@@ -66,10 +66,23 @@
 import AMapLoader from '@amap/amap-jsapi-loader';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, reactive, onMounted, watch } from 'vue';
+import dayjs from 'dayjs'; // 导入dayjs用于日期处理，保持和self_create_time.vue日期处理方式一致
+
+// 辅助函数：格式化日期为ISO 8601格式（YYYY-MM-DD），与self_create_time.vue的格式化逻辑适配
+const formatDate = (date) => {
+    if (!date) return '';
+    return dayjs(date).format('YYYY-MM-DD');
+};
+
+// 辅助函数：计算天数，包含起始日，与self_create_time.vue的天数计算逻辑适配
+const calculateDayCount = (start, end) => {
+    if (!start ||!end) return 0;
+    return dayjs(end).diff(dayjs(start), 'day') + 1;
+};
 
 export default {
     setup() {
-        // 使用reactive创建响应式的tripsById对象，确保结构符合预期且初始值合理
+        // 使用reactive创建响应式的tripsById对象，确保结构符合预期且初始值合理，初始化时给每个行程项添加dailyTrips字段
         const tripsById = reactive({
             1: {
                 title: '',
@@ -93,51 +106,98 @@ export default {
         const newPlace = ref('');
         const placeCoordinates = ref({});
         const selectedCity = ref('');
-        const startDate = ref('');
-        const endDate = ref('');
+        const startDate = ref(null);  // 初始化为null，后续再赋值为有效的日期对象
+        const endDate = ref(null);    // 初始化为null，后续再赋值为有效的日期对象
         const dayCount = ref(0);
 
         onMounted(() => {
             const route = useRoute();
-            // 先打印原始路由参数，方便排查是否获取到了tripData参数
-            console.log('原始路由参数：', route.query);
-            // 解析tripData参数，确保格式正确且能获取到对应的值
-            const tripData = route.query.tripData? JSON.parse(decodeURIComponent(route.query.tripData)) : {};
-            const { trip_name: city, start_date: start, end_date: end, day_count: dayCountValue } = tripData;
-
-            // 更严谨地获取天数数据，处理可能的异常情况，同时添加更多日志便于排查问题所在
-            if (typeof dayCountValue === 'number' && dayCountValue > 0) {
-                dayCount.value = dayCountValue;
-                console.log('成功获取到天数数据：', dayCount.value);
-            } else {
-                console.error('未获取到正确的天数数据，请检查参数传递或数据解析逻辑');
+            const tripData = route.query.tripData;
+            if (!tripData) {
+                console.error('未接收到tripData参数');
+                uni.showToast({
+                    title: '未获取到tripData参数，参数传递可能存在问题',
+                    icon: 'none'
+                });
+                return;
             }
+            // 去除空格等干扰字符
+            tripData = tripData.trim();
+            if (typeof tripData ==='string') {
+                try {
+                    const parsedTripData = JSON.parse(decodeURIComponent(tripData));
+                    // 明确解构赋值并添加默认值，防止属性不存在时报错
+                    const { trip_name: city = '', start_date: start = '', end_date: end = '', day_count: dayCountValue = 0 } = parsedTripData;
+                    // 更严谨地判断dayCountValue是否有效，考虑更多合理范围等情况
+                    if (typeof dayCountValue === 'number' && dayCountValue > 0 && dayCountValue < 100) {  // 假设行程天数一般小于100天，可根据实际调整
+                        dayCount.value = dayCountValue;
+                        console.log('成功获取到天数数据：', dayCount.value);
+                    } else {
+                        console.error('未获取到正确的天数数据，请检查参数传递或数据解析逻辑');
+                        uni.showToast({
+                            title: '天数数据不正确，请确认选择的行程天数',
+                            icon: 'none'
+                        });
+                        return;
+                    }
+                    // 正确解析并赋值startDate和endDate为日期对象，使用dayjs进行转换，确保和self_create_time.vue的日期处理一致
+                    startDate.value = dayjs(start).toDate();
+                    if (startDate.value.toString() === 'Invalid Date') {
+                        console.error('解析start_date为日期对象失败，请检查日期格式');
+                        return;
+                    }
+                    endDate.value = dayjs(end).toDate();
+                    if (endDate.value.toString() === 'Invalid Date') {
+                        console.error('解析end_date为日期对象失败，请检查日期格式');
+                        return;
+                    }
+                    // 根据获取的数据初始化行程相关信息，并添加日志查看赋值情况
+                    selectedCity.value = city || uni.getStorageSync('selectedCity') || '';
+                    console.log('初始化 selectedCity：', selectedCity.value);
+                    console.log('初始化 startDate：', startDate.value);
+                    console.log('初始化 endDate：', endDate.value);
 
-            // 根据获取的数据初始化行程相关信息，并添加日志查看赋值情况
-            selectedCity.value = city || uni.getStorageSync('selectedCity') || '';
-            console.log('初始化 selectedCity：', selectedCity.value);
-            startDate.value = start || uni.getStorageSync('startDate') || '';
-            console.log('初始化 startDate：', startDate.value);
-            endDate.value = end || uni.getStorageSync('endDate') || '';
-            console.log('初始化 endDate：', endDate.value);
+                    // 生成行程标题，格式如 "某某地几日游"，确保使用正确的天数数据
+                    tripTitle.value = `${selectedCity.value}${dayCount.value}日游`;
+                    console.log('生成行程标题：', tripTitle.value);
+                    // 生成旅行时间范围及时长显示，格式如 "开始日期至结束日期 天数天"（这里简单示例，你可根据实际需求完善几天几晚等更复杂格式）
+                    travelDateRange.value = `${formatDate(startDate.value)}至${formatDate(endDate.value)}`;
+                    tripDuration.value = `${dayCount.value}天`;
 
-            // 生成行程标题，格式如 "某某地几日游"，确保使用正确的天数数据
-            tripTitle.value = `${selectedCity.value}${dayCount.value}日游`;
-            console.log('生成行程标题：', tripTitle.value);
-            // 生成旅行时间范围及时长显示，格式如 "开始日期至结束日期 天数天"（这里简单示例，你可根据实际需求完善几天几晚等更复杂格式）
-            travelDateRange.value = `${startDate.value}至${endDate.value}`;
-            tripDuration.value = `${dayCount.value}天`;
+                    // 动态生成天数按钮，确保根据正确的天数生成对应的按钮数组
+                    days.value = ['总览',...Array.from({ length: dayCount.value }, (_, i) => `DAY${i + 1}`)];
 
-            // 动态生成天数按钮，确保根据正确的天数生成对应的按钮数组
-            days.value = ['总览',...Array.from({ length: dayCount.value }, (_, i) => `DAY${i + 1}`)];
-
-            // 重新初始化每日行程数据，确保响应式绑定正常，这里简单示例，可根据实际完善
-            if (dayCount.value > 0) {
-                tripsById[1].dailyTrips = Array.from({ length: dayCount.value }, (_, i) => ({
-                    day: `DAY${i + 1}`,
-                    city: selectedCity.value,
-                    places: ''
-                }));
+                    // 重新初始化每日行程数据，确保响应式绑定正常，这里简单示例，可根据实际完善
+                    console.log('开始初始化dailyTrips，天数为：', dayCount.value);
+                    if (dayCount.value > 0) {
+                        tripsById[1].dailyTrips = Array.from({ length: dayCount.value }, (_, i) => ({
+                            day: `DAY${i + 1}`,
+                            city: selectedCity.value,
+                            places: ''
+                        }));
+                        console.log('dailyTrips初始化完成，数据结构：', tripsById[1].dailyTrips);
+                    } else {
+                        // 添加默认值或错误处理逻辑，避免出现未定义的情况影响模板渲染
+                        tripsById[1].dailyTrips = [];
+                        console.error('天数数据异常，无法正确初始化dailyTrips，已设置为空数组');
+                        uni.showToast({
+                            title: '天数数据异常，行程展示可能受影响',
+                            icon: 'none'
+                        });
+                    }
+                } catch (error) {
+                    console.error('解析tripData参数出错：', error);
+                    uni.showToast({
+                        title: '参数解析出错，请检查参数传递格式是否正确',
+                        icon: 'none'
+                    });
+                }
+            } else {
+                console.error('tripData参数格式不正确，期望为字符串类型');
+                uni.showToast({
+                    title: 'tripData参数格式错误，应传递字符串类型的参数',
+                    icon: 'none'
+                });
             }
 
             // 打印tripsById对象，查看其结构是否符合预期，尤其是dailyTrips属性是否正确初始化

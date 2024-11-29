@@ -114,7 +114,9 @@ export default {
         const { access, refresh } = response.data;
         uni.setStorageSync('access_token', access);
         uni.setStorageSync('refresh_token', refresh);
-				// 打印 token 到控制台		    console.log('Access Token:', access);		    console.log('Refresh Token:', refresh);
+        // 打印 token 到控制台
+        console.log('Access Token:', access);
+        console.log('Refresh Token:', refresh);
 
         uni.redirectTo({
           url: '/pages/index/index'
