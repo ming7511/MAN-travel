@@ -1,25 +1,19 @@
 {
-  "hash": "eabd5330",
-  "configHash": "9efacf8d",
-  "lockfileHash": "cfa8809b",
-  "browserHash": "0eb4ed64",
+  "hash": "3654cf6c",
+  "configHash": "1f85b1ef",
+  "lockfileHash": "73058643",
+  "browserHash": "66f15cf3",
   "optimized": {
     "axios": {
       "src": "../../../../../node_modules/axios/index.js",
       "file": "axios.js",
-      "fileHash": "b6bbe6e1",
-      "needsInterop": false
-    },
-    "uuid": {
-      "src": "../../../../../pages/node_modules/uuid/dist/esm-browser/index.js",
-      "file": "uuid.js",
-      "fileHash": "991603ef",
+      "fileHash": "ecfabb09",
       "needsInterop": false
     },
     "@amap/amap-jsapi-loader": {
       "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
       "file": "@amap_amap-jsapi-loader.js",
-      "fileHash": "0eb2d309",
+      "fileHash": "36141dda",
       "needsInterop": true
     }
   },
