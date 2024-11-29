@@ -9,20 +9,32 @@
     <!-- 待出发部分 -->
     <div class="section">
       <div class="section-title">待出发</div>
-      <div class="trip-card" v-for="trip in upcomingTrips" :key="trip.id" :style="{ backgroundColor: trip.bgColor }" @click="goToOverview(trip)">
+      <div 
+        class="trip-card" 
+        v-for="trip in upcomingTrips" 
+        :key="trip.trip_id" 
+        :style="{ backgroundColor: trip.bgColor }" 
+        @click="goToOverview(trip)"
+      >
         <div class="trip-title">{{ trip.title }}</div>
         <div class="trip-dates">{{ trip.dateRange }}</div>
-        <div class="trip-duration">{{ trip.duration }}</div>
+        <div class="trip-duration">{{ trip.duration }} 天</div>
       </div>
     </div>
 
     <!-- 已结束部分 -->
     <div class="section">
       <div class="section-title">已结束</div>
-      <div class="trip-card" v-for="trip in pastTrips" :key="trip.id" :style="{ backgroundColor: trip.bgColor }" @click="goToOverview(trip)">
+      <div 
+        class="trip-card" 
+        v-for="trip in pastTrips" 
+        :key="trip.trip_id" 
+        :style="{ backgroundColor: trip.bgColor }" 
+        @click="goToOverview(trip)"
+      >
         <div class="trip-title">{{ trip.title }}</div>
         <div class="trip-dates">{{ trip.dateRange }}</div>
-        <div class="trip-duration">{{ trip.duration }}</div>
+        <div class="trip-duration">{{ trip.duration }} 天</div>
       </div>
     </div>
 
@@ -32,78 +44,133 @@
 </template>
 
 <script setup>
-import BottomNav from '/BottomNav.vue'; // 导入底部导航栏组件
-import { ref } from 'vue';
-import { useRouter } from 'vue-router'; // 导入 useRouter
-
-// 生成随机颜色的函数
-const generateRandomColor = () => {
-  const letters = '89ABCDEF'; // 为了保证颜色更亮一些，使用 '8' 到 'F'
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * letters.length)];
-  }
-  return color;
-};
+import BottomNav from '/BottomNav.vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
 // 待出发行程数据
-const upcomingTrips = ref([
-  {
-    trip_id: 1,  // 确保字段名称为 trip_id
-    title: '【示例】福州三日游 | 在三坊七巷感受榕城秋日古韵',
-    dateRange: '11.01至11.03',
-    duration: '3天2晚',
-    bgColor: generateRandomColor(),
-    places: [
-      '烟台山公园', '崔酱炸鸡', '上下杭', '三坊七巷', '后街捞化',
-      '鼓山', '福道', '达明美食街', '森林公园', '温泉公园', '闽江夜游'
-    ]
-  },
-  {
-    trip_id: 2,  // 将 id 改为 trip_id
-    title: '【示例】泉州三日游 | 螃蟹游记',
-    dateRange: '12.01至12.03',
-    duration: '3天2晚',
-    bgColor: generateRandomColor(),
-    places: [] // 该行程没有具体地点
-  }
-]);
+const upcomingTrips = ref([]);
 
 // 已结束行程数据
-const pastTrips = ref([
-  {
-    trip_id: 3,  // 将 id 改为 trip_id
-    title: '【示例】武汉三日游 | 遍吃逛吃武汉',
-    dateRange: '10.01至10.03',
-    duration: '3天2晚',
-    bgColor: generateRandomColor(),
-    places: [] // 该行程没有具体地点
+const pastTrips = ref([]);
+
+// 生成浅色背景颜色的函数
+const getLightColor = () => {
+  const r = Math.floor(Math.random() * 128 + 127); // R值在127到255之间
+  const g = Math.floor(Math.random() * 128 + 127); // G值在127到255之间
+  const b = Math.floor(Math.random() * 128 + 127); // B值在127到255之间
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+// 获取所有 trip_id
+const getTripIds = async () => {
+  try {
+    const token = uni.getStorageSync('access_token');  // 从本地存储获取token
+    const response = await axios.get('https://734dw56037em.vicp.fun/api/trip/tripuser', {
+      headers: {
+        Authorization: `Bearer ${token}`,  // 使用Bearer类型的token
+        'Content-Type': 'application/json'
+      }
+    });
+    if (response.data && response.data.trips) {
+      return response.data.trips.map(trip => trip.trip_id);  // 返回所有的trip_id
+    }
+    console.error('获取trip_id失败', response.data);
+    return [];
+  } catch (error) {
+    console.error('请求trip_id失败', error);
+    return [];
   }
-]);
+};
 
+// 获取行程活动数据
+const getTripActivities = async (trip_id) => {
+  try {
+    const response = await axios.get('https://734dw56037em.vicp.fun/api/trip/get_trip_activities/', {
+      params: { trip_information_id: trip_id }
+    });
 
+    if (response.data && response.data.trip) {
+      return response.data.trip[0];  // 返回第一个trip对象
+    } else {
+      console.error('获取行程活动失败', response.data);
+      return null;
+    }
+  } catch (error) {
+    console.error('请求行程活动数据失败', error);
+    return null;
+  }
+};
+
+// 获取所有行程并分类
+const fetchTrips = async () => {
+  const tripIds = await getTripIds();  // 动态获取trip_id
+  const updatedTrips = await Promise.all(
+    tripIds.map(async (trip_id) => {
+      const tripInfo = await getTripActivities(trip_id);  // 获取行程的基本信息
+      if (tripInfo) {
+        const startDate = new Date(tripInfo.start_date);  // 获取行程的起始日期
+        const endDate = new Date(tripInfo.end_date);  // 获取行程的结束日期
+        const duration = Math.ceil((endDate - startDate) / (1000 * 3600 * 24));  // 计算行程天数
+
+        // 构造行程数据，包含浅色背景颜色
+        return {
+          trip_id: tripInfo.trip_id,
+          title: tripInfo.trip_name,  // 行程名称
+          start_date: tripInfo.start_date,
+          end_date: tripInfo.end_date,
+          dateRange: `${tripInfo.start_date} 至 ${tripInfo.end_date}`,  // 日期范围
+          duration,  // 持续天数
+          bgColor: getLightColor()  // 生成浅色背景颜色
+        };
+      }
+      return null;
+    })
+  );
+
+  // 对行程进行日期分类
+  const today = new Date();
+  updatedTrips.forEach((trip) => {
+    if (trip) {
+      const startDate = new Date(trip.start_date);  // 获取行程的起始日期
+      const endDate = new Date(trip.end_date);  // 获取行程的结束日期
+
+      // 将行程根据日期分类
+      if (endDate < today) {
+        pastTrips.value.push(trip);  // 已结束的行程
+      } else if (startDate > today) {
+        upcomingTrips.value.push(trip);  // 待出发的行程
+      }
+    }
+  });
+};
+
+// 页面加载时获取行程数据
+onMounted(() => {
+  fetchTrips();
+});
+
+// 跳转到行程详情页
 const goToOverview = (trip) => {
-  // 获取并打印 token
   const token = uni.getStorageSync('access_token');
-  console.log('Access Token:', token); // 打印 token 到控制台
-  
-  // 使用 trip_id 进行页面导航
+  console.log('Access Token:', token);
+
   if (trip.trip_id) {
     uni.navigateTo({
       url: `/pages/Overview/Overview?trip_id=${trip.trip_id}`
     });
   } else {
     console.error('行程中缺少 trip_id');
+    uni.showToast({ title: '行程数据错误', icon: 'none' });
   }
 };
-
 </script>
 
 <style scoped>
 .home-page {
   padding: 20px;
-  padding-top: 40px; /* 给顶部预留空间 */
-  padding-bottom: 80px; /* 预留空间给底部导航栏，防止内容被遮挡 */
+  padding-top: 40px;
+  padding-bottom: 80px;
   background-color: #f8f8f8;
   min-height: 100vh;
   display: flex;
