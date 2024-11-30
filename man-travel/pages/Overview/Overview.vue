@@ -24,16 +24,14 @@
 			<view class="horizontal-line"></view>
 		</view>
 
-
-
 		<!-- 白色矩形区域 -->
 		<view class="white-rectangle">
 			<!-- 行程天数按钮 -->
 			<view class="day-buttons">
 				<!-- 行程天数按钮 -->
 				<button v-for="(day, index) in days" :key="index"
-					:class="['day-button', { active: currentDay === day }]"
-					@click="handleDayClick(day)">{{ day }}</button>
+				        :class="['day-button', { active: currentDay === day }]"
+				        @click="handleDayClick(day)">{{ day.startsWith('总览')? day : `DAY${parseInt(day.match(/(\d+)/)[1])}` }}</button>
 			</view>
 			<!-- 行程概览标题 -->
 			<view class="overview-title">行程概览</view>
@@ -74,6 +72,7 @@
     import AMapLoader from '@amap/amap-jsapi-loader';
     import { useRoute, useRouter } from 'vue-router';
     import { ref, onMounted } from 'vue';
+    import axios from 'axios'; // 引入axios
 
     export default {
         data() {
@@ -88,153 +87,154 @@
                 map: null, // 地图实例
                 days: [], // 存储行程天数（如：总览，DAY1, DAY2）
                 dailyTrips: [], // 每日行程
-                placeCoordinates: {}, // 地点坐标
+                placeCoordinates: {}, // 地点坐标，初始化为空对象
                 activities: [], // 活动列表，从服务器获取
                 tripData: {}, // 存储从服务器获取的行程数据
                 tripsById: {
-					1: {
-						trip_id:1,
-						title: '【示例】福州三日游 | 在三坊七巷感受榕城秋日古韵',
-						dateRange: '11.01至11.03',
-						duration: '3天2晚',
-						places: [
-							'烟台山公园', '崔酱炸鸡', '上下杭', '三坊七巷', '后街捞化',
-							'鼓山', '福道', '达明美食街', '森林公园', '温泉公园', '闽江夜游'
-						],
-						weather: [{
-								city: '福州市',
-								date: '10.1',
-								weekday: '周二',
-								icon: '☀',
-								condition: '晴朗无云',
-								temperature: '24°~28°'
-							},
-							{
-								city: '福州市',
-								date: '10.2',
-								weekday: '周三',
-								icon: '☁',
-								condition: '多云',
-								temperature: '22°~26°'
-							},
-							{
-								city: '福州市',
-								date: '10.3',
-								weekday: '周四',
-								icon: '🌧',
-								condition: '小雨',
-								temperature: '18°~22°'
-							}
-						],
-						placeCoordinates: {
-							'烟台山公园': [119.3112, 26.0558],
-							'崔酱炸鸡': [119.3080, 26.0612],
-							'上下杭': [119.3002, 26.0655],
-							'三坊七巷': [119.3005, 26.0688],
-							'后街捞化': [119.3020, 26.0710],
-							'鼓山': [119.3258, 26.0830],
-							'福道': [119.3030, 26.0800],
-							'达明美食街': [119.3010, 26.0720],
-							'森林公园': [119.3300, 26.0900],
-							'温泉公园': [119.3100, 26.0850],
-							'闽江夜游': [119.3050, 26.0700]
-						},
-						dailyTrips: [ // 每个行程对应的每日行程数据
-							{
-								day: 'DAY1',
-								city: '福州市',
-								places: '烟台山公园 - 崔酱炸鸡 - 上下杭 - 三坊七巷 - 后街捞化'
-							},
-							{
-								day: 'DAY2',
-								city: '福州市',
-								places: '鼓山 - 福道 - 达明美食街'
-							},
-							{
-								day: 'DAY3',
-								city: '福州市',
-								places: '森林公园 - 温泉公园 - 闽江夜游'
-							}
-						]
-					},
-					2: {
-						trip_id:2,
-						title: '【示例】泉州三日游 | 螃蟹游记',
-						dateRange: '12.01至12.03',
-						duration: '3天2晚',
-						places: [
-							'泉州古城', '清源山', '东西塔', '泉州东街口', '南门市场',
-							'泉州大桥', '泉州博物馆', '泉州夜市', '洛阳桥', '九日山'
-						],
-						weather: [{
-								city: '泉州市',
-								date: '12.1',
-								weekday: '周六',
-								icon: '☀',
-								condition: '晴朗无云',
-								temperature: '22°~26°'
-							},
-							{
-								city: '泉州市',
-								date: '12.2',
-								weekday: '周日',
-								icon: '☁',
-								condition: '多云',
-								temperature: '20°~24°'
-							},
-							{
-								city: '泉州市',
-								date: '12.3',
-								weekday: '周一',
-								icon: '🌧',
-								condition: '小雨',
-								temperature: '18°~22°'
-							}
-						],
-						placeCoordinates: {
-							'泉州古城': [118.6007, 24.9018],
-							'清源山': [118.7058, 24.9062],
-							'东西塔': [118.6005, 24.9068],
-							'泉州东街口': [118.5894, 24.9132],
-							'南门市场': [118.6001, 24.9143],
-							'泉州大桥': [118.6256, 24.9099],
-							'泉州博物馆': [118.6093, 24.9076],
-							'泉州夜市': [118.5876, 24.9135],
-							'洛阳桥': [118.6310, 24.8968],
-							'九日山': [118.6315, 24.8633]
-						},
-						dailyTrips: [{
-								day: 'DAY1',
-								city: '泉州市',
-								places: '泉州古城 - 清源山 - 东西塔 - 泉州东街口 - 南门市场'
-							},
-							{
-								day: 'DAY2',
-								city: '泉州市',
-								places: '泉州大桥 - 泉州博物馆 - 泉州夜市'
-							},
-							{
-								day: 'DAY3',
-								city: '泉州市',
-								places: '洛阳桥 - 九日山'
-							}
-						]
-					},
-					3: {
-						trip_id:3,
-						title: '【示例】武汉三日游 | 遍吃逛吃武汉',
-						dateRange: '10.01至10.03',
-						duration: '3天2晚',
-						places: [],
-						weather: [],
-						placeCoordinates: {},
-						dailyTrips: [] // 如果没有行程数据，这里设置为空
-					}
-				}
-			};
-		},
+                    1: {
+                        trip_id: 1,
+                        title: '【示例】福州三日游 | 在三坊七巷感受榕城秋日古韵',
+                        dateRange: '11.01至11.03',
+                        duration: '3天2晚',
+                        places: [
+                            '烟台山公园', '崔酱炸鸡', '上下杭', '三坊七巷', '后街捞化',
+                            '鼓山', '福道', '达明美食街', '森林公园', '温泉公园', '闽江夜游'
+                        ],
+                        weather: [{
+                                city: '福州市',
+                                date: '10.1',
+                                weekday: '周二',
+                                icon: '☀',
+                                condition: '晴朗无云',
+                                temperature: '24°~28°'
+                            },
+                            {
+                                city: '福州市',
+                                date: '10.2',
+                                weekday: '周三',
+                                icon: '☁',
+                                condition: '多云',
+                                temperature: '22°~26°'
+                            },
+                            {
+                                city: '福州市',
+                                date: '10.3',
+                                weekday: '周四',
+                                icon: '🌧',
+                                condition: '小雨',
+                                temperature: '18°~22°'
+                            }
+                        ],
+                        placeCoordinates: {
+                            '烟台山公园': [119.3112, 26.0558],
+                            '崔酱炸鸡': [119.3080, 26.0612],
+                            '上下杭': [119.3002, 26.0655],
+                            '三坊七巷': [119.3005, 26.0688],
+                            '后街捞化': [119.3020, 26.0710],
+                            '鼓山': [119.3258, 26.0830],
+                            '福道': [119.3030, 26.0800],
+                            '达明美食街': [119.3010, 26.0720],
+                            '森林公园': [119.3300, 26.0900],
+                            '温泉公园': [119.3100, 26.0850],
+                            '闽江夜游': [119.3050, 26.0700]
+                        },
+                        dailyTrips: [ // 每个行程对应的每日行程数据
+                            {
+                                day: 'DAY1',
+                                city: '福州市',
+                                places: '烟台山公园 - 崔酱炸鸡 - 上下杭 - 三坊七巷 - 后街捞化'
+                            },
+                            {
+                                day: 'DAY2',
+                                city: '福州市',
+                                places: '鼓山 - 福道 - 达明美食街'
+                            },
+                            {
+                                day: 'DAY3',
+                                city: '福州市',
+                                places: '森林公园 - 温泉公园 - 闽江夜游'
+                            }
+                        ]
+                    },
+                    2: {
+                        trip_id: 2,
+                        title: '【示例】泉州三日游 | 螃蟹游记',
+                        dateRange: '12.01至12.03',
+                        duration: '3天2晚',
+                        places: [
+                            '泉州古城', '清源山', '东西塔', '泉州东街口', '南门市场',
+                            '泉州大桥', '泉州博物馆', '泉州夜市', '洛阳桥', '九日山'
+                        ],
+                        weather: [{
+                                city: '泉州市',
+                                date: '12.1',
+                                weekday: '周六',
+                                icon: '☀',
+                                condition: '晴朗无云',
+                                temperature: '22°~26°'
+                            },
+                            {
+                                city: '泉州市',
+                                date: '12.2',
+                                weekday: '周日',
+                                icon: '☁',
+                                condition: '多云',
+                                temperature: '20°~24°'
+                            },
+                            {
+                                city: '泉州市',
+                                date: '12.3',
+                                weekday: '周一',
+                                icon: '🌧',
+                                condition: '小雨',
+                                temperature: '18°~22°'
+                            }
+                        ],
+                        placeCoordinates: {
+                            '泉州古城': [118.6007, 24.9018],
+                            '清源山': [118.7058, 24.9062],
+                            '东西塔': [118.6005, 24.9068],
+                            '泉州东街口': [118.5894, 24.9132],
+                            '南门市场': [118.6001, 24.9143],
+                            '泉州大桥': [118.6256, 24.9099],
+                            '泉州博物馆': [118.6093, 24.9076],
+                            '泉州夜市': [118.5876, 24.9135],
+                            '洛阳桥': [118.6310, 24.8968],
+                            '九日山': [118.6315, 24.8633]
+                        },
+                        dailyTrips: [{
+                                day: 'DAY1',
+                                city: '泉州市',
+                                places: '泉州古城 - 清源山 - 东西塔 - 泉州东街口 - 南门市场'
+                            },
+                            {
+                                day: 'DAY2',
+                                city: '泉州市',
+                                places: '泉州大桥 - 泉州博物馆 - 泉州夜市'
+                            },
+                            {
+                                day: 'DAY3',
+                                city: '泉州市',
+                                places: '洛阳桥 - 九日山'
+                            }
+                        ]
+                    },
+                    3: {
+                        trip_id: 3,
+                        title: '【示例】武汉三日游 | 遍吃逛吃武汉',
+                        dateRange: '10.01至10.03',
+                        duration: '3天2晚',
+                        places: [],
+                        weather: [],
+                        placeCoordinates: {},
+                        dailyTrips: [] // 如果没有行程数据，这里设置为空
+                    }
+                }
+            };
+        },
+		
 
-mounted() {
+        mounted() {
             // 先检查是否有本地 trip_id，如果没有再查找服务器返回的 trip_information_id
             const tripId = this.$route.query.trip_information_id || this.$route.query.trip_id || this.$route.query.id;
 
@@ -273,18 +273,16 @@ mounted() {
                     return;
                 }
 
-                // 构建请求 URL，添加查询参数，参数名为 trip_information_id
                 const url = `https://734dw56037em.vicp.fun/api/trip/get_trip_activities/?trip_information_id=${tripId}`;
                 console.log('请求 URL:', url);
 
-                // 发起 GET 请求
                 uni.request({
                     url: url,
                     method: 'GET',
                     success: (res) => {
                         console.log('响应数据:', res);
                         if (res.statusCode === 200) {
-                            const tripData = res.data && res.data ? res.data : undefined;
+                            const tripData = res.data && res.data? res.data : undefined;
                             if (!tripData) {
                                 console.error('未获取到有效的行程数据');
                                 return;
@@ -308,14 +306,49 @@ mounted() {
                 });
             },
 
+            // 获取地点坐标信息（修改后的方法，适配后端实际返回的坐标数据格式进行解析）
+            fetchPlaceCoordinates(tripId) {
+                const url = `https://734dw56037em.vicp.fun/api/trip/Triplocation/${tripId}`;
+                return axios.get(url)
+                  .then((response) => {
+                        console.log('获取地点坐标信息，响应数据:', response.data);
+                        if (response.data && response.data.poi) {
+                            const poi = response.data.poi;
+                            if (poi.location) {
+                                // 对后端返回的字符串格式坐标进行解析，分割为经度和纬度并转换为数字类型后放入数组
+                                const locationArr = poi.location.split(',').map(Number);
+                                if (locationArr.length === 2) {
+                                    return locationArr;
+                                } else {
+                                    console.error('获取地点坐标信息失败，解析后的坐标数据格式不正确，无法转换为有效坐标数组');
+                                    return null;
+                                }
+                            } else {
+                                console.error('获取地点坐标信息失败，返回数据中缺少坐标信息');
+                                return null;
+                            }
+                        } else {
+                            console.error('获取地点坐标信息失败，返回数据格式不正确，数据: ', response.data);
+                            return null;
+                        }
+                    })
+                  .catch((error) => {
+                        console.error('获取地点坐标信息失败', error);
+                        console.log('尝试使用默认坐标或提示用户手动输入坐标');
+                        // 这里可以添加逻辑，比如设置一个默认坐标（如果有合适的默认值设定）
+                        const defaultCoordinates = [0, 0]; // 示例默认坐标，需根据实际情况调整
+                        return defaultCoordinates;
+                    });
+            },
+
             // 初始化行程数据
             initTripData(tripData) {
                 if (!tripData) {
                     console.error('没有行程数据');
                     return;
                 }
-
-                const isLocalData = typeof tripData.trip_id !== 'undefined';
+            
+                const isLocalData = typeof tripData.trip_id!== 'undefined';
                 if (isLocalData) {
                     this.tripTitle = tripData.title || '未知行程';
                     this.travelDateRange = tripData.dateRange || '';
@@ -324,18 +357,26 @@ mounted() {
                     this.weatherForecast = tripData.weather || [];
                     this.placeCoordinates = tripData.placeCoordinates || {};
                     this.dailyTrips = tripData.dailyTrips || [];
-
+            
                     const dayCount = this.dailyTrips.length;
-                    this.days = ['总览', ...Array.from({ length: dayCount }, (_, i) => `DAY${i + 1}`)];
+                    this.days = ['总览',...Array.from({ length: dayCount }, (_, i) => `DAY${i + 1}`)];
                 } else {
-                    const tripInfo = tripData.trip && tripData.trip.length > 0 ? tripData.trip[0] : {};
+                    const tripInfo = tripData.trip && tripData.trip.length > 0? tripData.trip[0] : {};
                     const activities = tripData.activities || [];
-
+            
                     if (!tripInfo.trip_name) {
-                        console.error('tripData 中没有有效的行程信息');
+                        console.error('tripData中没有有效的行程信息');
                         return;
                     }
-
+            
+                    // 新增判断 activities 是否为空，若为空给出提示信息
+                    if (activities.length === 0) {
+                        uni.showToast({
+                            title: '当前行程暂无活动相关信息，部分功能展示可能受限',
+                            icon: 'none'
+                        });
+                    }
+            
                     this.tripTitle = tripInfo.trip_name || '未知行程';
                     this.travelDateRange = `${tripInfo.start_date} 至 ${tripInfo.end_date}`;
                     const startDate = new Date(tripInfo.start_date);
@@ -343,54 +384,91 @@ mounted() {
                     const timeDiff = endDate - startDate;
                     const daysDiff = timeDiff / (1000 * 3600 * 24) + 1;
                     this.tripDuration = `${daysDiff}天`;
-
-                    this.places = activities.map(activity => activity.trip_destination);
+            
+                    // 当 activities 为空时，避免调用 map 方法导致报错，直接赋值为空数组
+                    this.places = activities.length > 0? activities.map(activity => activity.trip_destination) : [];
                     this.placeCoordinates = {};
                     this.dailyTrips = [];
                     const activitiesByDay = {};
-                    activities.forEach(activity => {
+                      activities.forEach(activity => {
                         const dayKey = `DAY${activity.days}`;
                         if (!activitiesByDay[dayKey]) {
-                            activitiesByDay[dayKey] = [];
+                          activitiesByDay[dayKey] = [];
                         }
                         activitiesByDay[dayKey].push(activity.trip_destination);
-                    });
-
-                    for (let day in activitiesByDay) {
+                      });
+                    
+                      for (let day in activitiesByDay) {
                         this.dailyTrips.push({
-                            day: day,
-                            city: tripInfo.trip_name,
-                            places: activitiesByDay[day].join(' - ')
+                          day: day,
+                          city: tripInfo.trip_name,
+                          places: activitiesByDay[day].join(' - ')
                         });
-                    }
-
-                    this.days = ['总览', ...Array.from({ length: daysDiff }, (_, i) => `DAY${i + 1}`)];
+                      }
+            
+                    this.days = ['总览',...Array.from({ length: daysDiff }, (_, i) => `DAY${i + 1}`)];
+            
+                    // 获取单个地点坐标（不再遍历多个地点），并进行相应处理
+                    this.fetchPlaceCoordinates(this.tripId)
+                     .then(coordinates => {
+                            if (coordinates) {
+                                this.placeCoordinates = { '默认地点': coordinates }; // 这里将坐标关联到一个默认地点名称，可根据实际调整
+                                console.log('获取到的坐标信息:', this.placeCoordinates);
+                                if (Object.keys(this.placeCoordinates).length > 0) {
+                                    this.initMap(this.placeCoordinates);
+                                } else {
+                                    console.error('获取的坐标信息无效，无法初始化地图');
+                                    uni.showToast({
+                                        title: '无法获取有效行程地点坐标，地图展示可能受限，请手动输入坐标',
+                                        icon: 'none'
+                                    });
+                                }
+                            } else {
+                                console.error('获取地点坐标失败，无法初始化地图');
+                                uni.showToast({
+                                    title: '无法获取行程地点坐标，地图展示可能受限，请手动输入坐标',
+                                    icon: 'none'
+                                });
+                            }
+                        })
+                     .catch((error) => {
+                            console.error('获取地点坐标时出错',
+                                error);
+                            uni.showToast({
+                                title: '获取行程地点坐标出现错误，请稍后重试或手动输入坐标',
+                                icon: 'none'
+                            });
+                        });
                 }
-
-                this.initMap(this.placeCoordinates);
             },
 
             // 初始化地图
             initMap(placeCoordinates) {
                 const that = this;
+                if (Object.keys(placeCoordinates).length === 0) {
+                    console.error('没有有效的地点坐标数据，无法初始化地图');
+                    return;
+                }
+                const firstPlace = Object.keys(placeCoordinates)[0];
+                const initialCoords = placeCoordinates[firstPlace];
                 AMapLoader.load({
                     key: 'd702b20c1d0b7a34eaffae39500d2210',
                     version: '2.0',
                     plugins: ['AMap.ToolBar']
                 }).then((AMap) => {
                     that.map = new AMap.Map('map-container', {
-                        center: [119.306238, 26.075302],
+                        center: initialCoords,
                         zoom: 12
                     });
                     that.map.addControl(new AMap.ToolBar());
-
+            
                     const dayMarkers = [];
                     const dayColors = {
                         DAY1: '#FF5733',
                         DAY2: '#33FF57',
                         DAY3: '#5733FF'
                     };
-
+            
                     this.dailyTrips.forEach((dayTrip) => {
                         const places = dayTrip.places.split(' - ');
                         let prevMarker = null;
@@ -414,7 +492,7 @@ mounted() {
                             }
                         });
                     });
-
+            
                     const firstDayTrip = that.dailyTrips[0];
                     if (firstDayTrip) {
                         const firstPlace = firstDayTrip.places.split(' - ')[0];
@@ -429,23 +507,40 @@ mounted() {
 
             // 概览页的 navigateToPage 方法
             navigateToPage(pagePath) {
-              const tripId = this.tripId;
-              if (tripId) {
-                uni.navigateTo({
-                  url: `${pagePath}?id=${tripId}`,
-                  success: (res) => {
-                    res.eventChannel.emit('acceptTripData', { tripData: this.tripData });
-                  }
-                });
-              } else {
-                console.error('未找到 trip_id 参数，无法跳转');
-                uni.showToast({
-                  title: '未找到行程 ID，无法跳转',
-                  icon: 'none',
-                  duration: 3000
-                });
-              }
+                const tripId = this.tripId;
+                if (tripId) {
+                    uni.navigateTo({
+                        url: `${pagePath}?id=${tripId}`,
+                        success: (res) => {
+                            res.eventChannel.emit('acceptTripData', { tripData: this.tripData });
+                        }
+                    });
+                } else {
+                    console.error('未找到 trip_id 参数，无法跳转');
+                    uni.showToast({
+                        title: '未找到行程 ID，无法跳转',
+                        icon: 'none',
+                        duration: 3000
+                    });
+                }
             },
+			
+			// 点击“行程”按钮的跳转逻辑
+			handleShowOverview() {
+			    const tripId = this.tripId;
+			    if (tripId) {
+			        uni.navigateTo({
+			            url: `/pages/Overview/Overview?id=${tripId}`
+			        });
+			    } else {
+			        console.error('未找到 trip_id 参数，无法跳转到行程页面');
+			        uni.showToast({
+			            title: '未找到行程 ID，无法跳转',
+			            icon: 'none',
+			            duration: 3000
+			        });
+			    }
+			},
 
             // 点击“旅行账单”按钮的跳转逻辑
             handleShouyeClick() {
@@ -459,19 +554,34 @@ mounted() {
 
             // 点击行程天数按钮后的跳转逻辑
             handleDayClick(day) {
+                console.log('当前 this.tripId 的值：', this.tripId);
+                console.log('this.tripId 的数据类型：', typeof this.tripId);
                 if (!this.tripId) {
                     console.error('未找到 trip_id 参数');
                     return;
                 }
-
-                if (day !== '总览') {
-                    const selectedTrip = this.dailyTrips.find((trip) => trip.day === day);
-                    if (selectedTrip) {
-                        let places = selectedTrip.places;
-                        const placesEncoded = encodeURIComponent(places);
+                console.log('当前 this.dailyTrips 的数据：', this.dailyTrips);
+                console.log('this.dailyTrips 的数据类型：', typeof this.dailyTrips);
+                console.log('this.dailyTrips 的长度：', this.dailyTrips.length);
+                if (day!== '总览') {
+                    if (this.dailyTrips.length === 0) {
+                        // 当dailyTrips为空时，直接跳转到DayDetail页面去添加行程，传递必要参数并通过query参数表明是添加行程操作
+						console.log('准备跳转到DayDetail组件，当前tripId的值：', this.tripId);
+						console.log('拼接好的跳转URL：', `/pages/DayDetail/DayDetail?day=${day}&id=${this.tripId}&isAddTrip=true&title=${encodeURIComponent(this.tripTitle)}&dateRange=${encodeURIComponent(this.travelDateRange)}&duration=${encodeURIComponent(this.tripDuration)}&days=${encodeURIComponent(this.days.join(' - '))}`);
+                        console.log('准备传递给DayDetail组件的tripId值:', this.tripId, '类型:', typeof this.tripId);
                         uni.navigateTo({
-                            url: `/pages/DayDetail/DayDetail?day=${day}&id=${this.tripId}&places=${placesEncoded}`
+                            url: `/pages/DayDetail/DayDetail?day=${day}&tripId=${this.tripId}&title=${encodeURIComponent(this.tripTitle)}&dateRange=${encodeURIComponent(this.travelDateRange)}&duration=${encodeURIComponent(this.tripDuration)}&days=${encodeURIComponent(this.days.join(' - '))}`
                         });
+                    } else {
+                        const selectedTrip = this.dailyTrips.find((trip) => trip.day === day);
+                        if (selectedTrip) {
+                            let places = selectedTrip.places;
+                            const placesEncoded = encodeURIComponent(places);
+							console.log('准备传递给DayDetail组件的tripId值:', this.tripId);
+                            uni.navigateTo({
+                                url: `/pages/DayDetail/DayDetail?day=${day}&tripId=${this.tripId}&title=${encodeURIComponent(this.tripTitle)}&dateRange=${encodeURIComponent(this.travelDateRange)}&duration=${encodeURIComponent(this.tripDuration)}&days=${encodeURIComponent(this.days.join(' - '))}`
+                            });
+                        }
                     }
                 } else {
                     this.setCurrentDay(day);
@@ -648,6 +758,7 @@ mounted() {
 			  overflow-x: auto; /* 使容器可以左右滑动 */
 			  white-space: nowrap; /* 防止子元素换行 */
 			  margin-bottom: 5px;
+			  -webkit-overflow-scrolling: touch; /* 启用iOS惯性滚动效果 */
 			}
 			
 			.day-button {

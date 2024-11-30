@@ -1,19 +1,40 @@
 {
-  "hash": "6e761f7f",
-  "configHash": "001ebabd",
+<<<<<<< HEAD
+  "hash": "3654cf6c",
+  "configHash": "1f85b1ef",
   "lockfileHash": "73058643",
-  "browserHash": "93e0c785",
+  "browserHash": "66f15cf3",
+=======
+  "hash": "6804162b",
+  "configHash": "9efacf8d",
+  "lockfileHash": "bc92c8db",
+  "browserHash": "d729feae",
+>>>>>>> 1f3350ecb7b170727ed3a5fa6e758cd551960bd4
   "optimized": {
     "axios": {
       "src": "../../../../../node_modules/axios/index.js",
       "file": "axios.js",
-      "fileHash": "2f206636",
+<<<<<<< HEAD
+      "fileHash": "e09da34c",
+=======
+      "fileHash": "b98917b2",
+      "needsInterop": false
+    },
+    "uuid": {
+      "src": "../../../../../pages/node_modules/uuid/dist/esm-browser/index.js",
+      "file": "uuid.js",
+      "fileHash": "3dfd2e02",
+>>>>>>> 1f3350ecb7b170727ed3a5fa6e758cd551960bd4
       "needsInterop": false
     },
     "@amap/amap-jsapi-loader": {
       "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
       "file": "@amap_amap-jsapi-loader.js",
-      "fileHash": "acc4e7e5",
+<<<<<<< HEAD
+      "fileHash": "f7ebce01",
+=======
+      "fileHash": "6189f584",
+>>>>>>> 1f3350ecb7b170727ed3a5fa6e758cd551960bd4
       "needsInterop": true
     }
   },

@@ -184,15 +184,19 @@ const handleConfirm = () => {
           icon: 'success',
         });
   
-        // 提取服务器返回的 trip_id
-        const { trip_id } = res.data;
+        // 提取服务器返回的 trip_id、title 和 photo
+        const { trip_id, title, photo } = res.data;
         
         // 构建包含 trip_id 的 URL
         const importPageUrl = `/pages/create_method/import/import?trip_id=${trip_id}`;
   
         // 跳转到 import 页面
         uni.navigateTo({
-          url: importPageUrl, // 包含 trip_id 的 URL
+          url: importPageUrl,
+          success: function (navigateRes) {
+            // 通过 eventChannel 向被打开页面传送数据
+            navigateRes.eventChannel.emit('acceptDataFromOpenerPage', { title, photo });
+          },
         });
       } else {
         // 服务器返回非成功状态码
@@ -216,7 +220,8 @@ const handleConfirm = () => {
       }
     },
   });
-};
+}; // <-- 添加这个闭合括号来关闭 handleConfirm 函数
+
 
 // 使用 onLoad 生命周期获取页面参数
 onLoad((options) => {

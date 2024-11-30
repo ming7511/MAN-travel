@@ -2,9 +2,9 @@ import {
   __commonJS
 } from "./chunk-P2LSHJDD.js";
 
-// C:/Users/gjm/MAN-travel/man-travel/node_modules/@amap/amap-jsapi-loader/dist/index.js
+// @amap/amap-jsapi-loader/dist/index.js
 var require_dist = __commonJS({
-  "C:/Users/gjm/MAN-travel/man-travel/node_modules/@amap/amap-jsapi-loader/dist/index.js"(exports, module) {
+  "@amap/amap-jsapi-loader/dist/index.js"(exports, module) {
     (function(m, p) {
       "object" === typeof exports && "undefined" !== typeof module ? module.exports = p() : "function" === typeof define && define.amd ? define(p) : (m = m || self, m.AMapLoader = p());
     })(exports, function() {
